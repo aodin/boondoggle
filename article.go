@@ -1,12 +1,12 @@
 package boondoggle
 
 import (
+	"github.com/russross/blackfriday"
 	"html/template"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
-	"github.com/russross/blackfriday"
 )
 
 type Article struct {
@@ -46,9 +46,9 @@ func LoadArticles(path string) (articles []*Article, err error) {
 		// TODO We'll cheat for now to get the filename without the extension,
 		// since we know it ends in .md
 		article := &Article{
-			Title: UnSnakeCase(name[:len(name) - 3]),
-			Raw: content,
-			Body: template.HTML(blackfriday.MarkdownBasic(content)),
+			Title: UnSnakeCase(name[:len(name)-3]),
+			Raw:   content,
+			Body:  template.HTML(blackfriday.MarkdownBasic(content)),
 		}
 		articles = append(articles, article)
 	}

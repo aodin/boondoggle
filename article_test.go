@@ -27,7 +27,7 @@ More on GitHub, [Boondoggle](www.github.com/aodin/boondoggle)
 `
 
 func TestLoadArticles(t *testing.T) {
-	articles, err := GetArticles(testDir)
+	articles, err := LoadArticles(testDir)
 	if err != nil {
 		t.Fatal(err)
 	}
