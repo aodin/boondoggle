@@ -26,7 +26,7 @@ Subtitle
 More on GitHub, [Boondoggle](www.github.com/aodin/boondoggle)
 `
 
-func TestGetArticles(t *testing.T) {
+func TestLoadArticles(t *testing.T) {
 	articles, err := GetArticles(testDir)
 	if err != nil {
 		t.Fatal(err)

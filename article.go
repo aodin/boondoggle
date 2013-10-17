@@ -19,7 +19,7 @@ func (article *Article) String() string {
 	return article.Title
 }
 
-func GetArticles(path string) (articles []*Article, err error) {
+func LoadArticles(path string) (articles []*Article, err error) {
 	entries, err := ioutil.ReadDir(path)
 	if err != nil {
 		return nil, err
