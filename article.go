@@ -25,11 +25,12 @@ func LoadArticles(path string) (articles []*Article, err error) {
 		return nil, err
 	}
 	for _, entry := range entries {
-		// Easy way to get the fullpath
+		// TODO Is there an easier way to get the fullpath?
+		// TODO Walk the entire directory structure?
 		name := entry.Name()
 		extension := strings.ToLower(filepath.Ext(name))
 
-		// TODO Allow a filter by file extension
+		// TODO Allow a filter by custom file extension
 		if extension != ".md" {
 			continue
 		}
