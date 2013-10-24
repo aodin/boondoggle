@@ -7,12 +7,15 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Article struct {
-	Title string
-	Body  template.HTML
-	Raw   []byte // The raw markdown string
+	Title     string
+	Date      string
+	Timestamp time.Time
+	Body      template.HTML
+	Raw       []byte // The raw markdown string
 }
 
 func (article *Article) String() string {
@@ -44,13 +47,33 @@ func LoadArticles(path string) (articles []*Article, err error) {
 			return nil, err
 		}
 
+		// Attempt to parse a date from the filename
 		// TODO We'll cheat for now to get the filename without the extension,
 		// since we know it ends in .md
-		article := &Article{
-			Title: UnSnakeCase(name[:len(name)-3]),
-			Raw:   content,
-			Body:  template.HTML(blackfriday.MarkdownBasic(content)),
+		filename := name[:len(name)-3]
+
+		date, title := SplitFilename(filename)
+		// If not date was recovered, convert the whole filename to a title
+		if date == "" {
+			title = filename
 		}
+
+		article := &Article{
+			Title: UnSnakeCase(title),
+			Raw:   content,
+			Body:  template.HTML(blackfriday.MarkdownCommon(content)),
+		}
+
+		// TODO guh, stupid logical flow
+		if date != "" {
+			// Attempt to parse the date and add it to the article
+			timestamp, err := ParseDate(date)
+			if err == nil {
+				article.Timestamp = timestamp
+				article.Date = OutputDate(timestamp)
+			}
+		}
+
 		articles = append(articles, article)
 	}
 	return
