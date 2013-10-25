@@ -34,10 +34,12 @@ func (b *Boondoggle) LoadFrom(path string) error {
 	if err != nil {
 		return err
 	}
+	b.ordering = articles
+	Articles(articles).Sort()
 	for _, article := range articles {
-		slug := Slugify(article.Title)
+		article.Slug = Slugify(article.Title)
 		// TODO What to do about duplicate slugs?
-		b.articles[slug] = article
+		b.articles[article.Slug] = article
 	}
 	return nil
 }
@@ -70,7 +72,7 @@ func (b *Boondoggle) Article(w http.ResponseWriter, article *Article) {
 // List the available articles
 func (b *Boondoggle) List(w http.ResponseWriter) {
 	// TODO There should be a cached list of articles
-	b.attrs["Articles"] = b.articles
+	b.attrs["Articles"] = b.ordering
 	b.listTemplate.Execute(w, b.attrs)
 }
 
@@ -87,8 +89,8 @@ var listTmpl = `<!DOCTYPE html>
   <body>
     <h1>Articles</h1>
     <ul>
-    {{ range $slug, $article := .Articles }}
-      <li><a href="./{{ $slug }}">{{ $article.Title }}</a></li>{{ end }}
+    {{ range $article := .Articles }}
+      <li><a href="./{{ $article.Slug }}">{{ $article.Title }}</a></li>{{ end }}
     </ul>
   </body>
 </html>
@@ -119,14 +121,9 @@ func Create() *Boondoggle {
 func CreateFrom(path string) (*Boondoggle, error) {
 	// Load the articles from the directory
 	b := Create()
-	articles, err := LoadArticles(path)
+	err := b.LoadFrom(path)
 	if err != nil {
 		return b, err
-	}
-	for _, article := range articles {
-		slug := Slugify(article.Title)
-		// TODO What to do about duplicate slugs?
-		b.articles[slug] = article
 	}
 	return b, nil
 }

@@ -6,16 +6,16 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
-	"time"
 )
 
 type Article struct {
-	Title     string
-	Date      string
-	Timestamp time.Time
-	Body      template.HTML
-	Raw       []byte // The raw markdown string
+	Title string
+	Slug  string
+	Date  Timestamp
+	Body  template.HTML
+	Raw   []byte // The raw markdown string
 }
 
 func (article *Article) String() string {
@@ -67,14 +67,46 @@ func LoadArticles(path string) (articles []*Article, err error) {
 		// TODO guh, stupid logical flow
 		if date != "" {
 			// Attempt to parse the date and add it to the article
-			timestamp, err := ParseDate(date)
+			timestamp, err := CreateTimestamp(date)
 			if err == nil {
-				article.Timestamp = timestamp
-				article.Date = OutputDate(timestamp)
+				article.Date = timestamp
 			}
 		}
 
 		articles = append(articles, article)
 	}
 	return
+}
+
+type Articles []*Article
+
+// Implement the sort.Interface for sorting
+func (a Articles) Len() int {
+	return len(a)
+}
+
+func (a Articles) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+type ByTitle struct {
+	Articles
+}
+
+type ByDate struct {
+	Articles
+}
+
+func (a ByDate) Less(i, j int) bool {
+	x, y := a.Articles[i], a.Articles[j]
+	if x.Date.Unix() == y.Date.Unix() {
+		// Sort alphabetically
+		return x.Title < y.Title
+	}
+	// Most recent articles should be first
+	return x.Date.Unix() > y.Date.Unix()
+}
+
+func (a Articles) Sort() {
+	sort.Sort(ByDate{a})
 }

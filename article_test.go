@@ -45,3 +45,32 @@ func TestLoadArticles(t *testing.T) {
 		t.Errorf("Unexpected article title: %s", article.Title)
 	}
 }
+
+// Test the sorting of articles
+func TestArticles(t *testing.T) {
+	a := &Article{
+		Title: "A",
+		Date:  MustCreate("2013-10-30"),
+	}
+	b := &Article{
+		Title: "B",
+		Date:  MustCreate("2013-10-30"),
+	}
+	x := &Article{
+		Title: "X",
+		Date:  MustCreate("2013-01-30"),
+	}
+
+	articles := Articles{x, b, a}
+	articles.Sort()
+
+	if articles[0] != a {
+		t.Error("Unexpected sort order for articles:", articles)
+	}
+	if articles[1] != b {
+		t.Error("Unexpected sort order for articles:", articles)
+	}
+	if articles[2] != x {
+		t.Error("Unexpected sort order for articles:", articles)
+	}
+}

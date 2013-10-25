@@ -1,10 +1,8 @@
 package boondoggle
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
-	"time"
 )
 
 var slugifyClean = regexp.MustCompile(`[^\w\s-]`)
@@ -37,12 +35,4 @@ func SplitFilename(input string) (string, string) {
 		return "", ""
 	}
 	return results[1], results[2]
-}
-
-func ParseDate(input string) (time.Time, error) {
-	return time.Parse("2006-01-02", input)
-}
-
-func OutputDate(input time.Time) string {
-	return fmt.Sprintf("%s, %s %s", input.Weekday(), input.Month(), input.Format("2, 2006"))
 }
