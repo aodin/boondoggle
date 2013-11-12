@@ -3,6 +3,7 @@ package boondoggle
 import (
 	"regexp"
 	"strings"
+	"unicode"
 )
 
 var slugifyClean = regexp.MustCompile(`[^\w\s-]`)
@@ -19,8 +20,20 @@ func UnSnakeCase(input string) string {
 	words := strings.Split(input, "_")
 	titles := make([]string, len(words))
 	// TODO Inefficient method for capitalization, look at unicode.ToTitle
+	// TODO There is also a unicode method for IsTitle
+	capitalize := true
+	if len(words) > 0 {
+		firstWord := []rune(words[0])
+		if len(firstWord) > 0 && unicode.IsUpper(firstWord[0]) {
+			capitalize = false
+		}
+	}
 	for index, word := range words {
-		titles[index] = strings.Title(word)
+		if capitalize {
+			titles[index] = strings.Title(word)
+		} else {
+			titles[index] = word
+		}
 	}
 	return strings.Join(titles, " ")
 }

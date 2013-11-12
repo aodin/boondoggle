@@ -2,7 +2,7 @@ package boondoggle
 
 import (
 	"html/template"
-    "log"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -42,14 +42,14 @@ func (b *Boondoggle) LoadFrom(path string) error {
 		// TODO What to do about duplicate slugs?
 		b.articles[article.Slug] = article
 	}
-    log.Printf("Loaded %d Articles\n", len(articles))
+	log.Printf("Loaded %d Articles\n", len(articles))
 	return nil
 }
 
 // Route to the requested article, if it exists
 func (b *Boondoggle) Route(w http.ResponseWriter, r *http.Request) {
 	// TODO logging
-    log.Printf("Request: %s, %s, %s, %s\n", r.URL, r.Method, r.RemoteAddr, r.Header.Get("User-Agent"))
+	log.Printf("Request: %s, %s, %s, %s\n", r.URL, r.Method, r.RemoteAddr, r.Header.Get("User-Agent"))
 	// We assume the last part of the request URL is the article slug
 	path := strings.Split(r.URL.Path, "/")
 	slug := path[len(path)-1]

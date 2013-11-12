@@ -11,6 +11,14 @@ func TestUnSnakeCase(t *testing.T) {
 	if output != expected {
 		t.Errorf("Unexpected UnSnakeCase() output: %s != %s", output, expected)
 	}
+
+	// If the title already has capitalization, do nothing
+	input = "SNAKE_case"
+	output = UnSnakeCase(input)
+	expected = "SNAKE case"
+	if output != expected {
+		t.Errorf("Unexpected UnSnakeCase() output: %s != %s", output, expected)
+	}
 }
 
 func TestSlugify(t *testing.T) {
