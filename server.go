@@ -48,8 +48,9 @@ func (b *Boondoggle) LoadFrom(path string) error {
 
 // Route to the requested article, if it exists
 func (b *Boondoggle) Route(w http.ResponseWriter, r *http.Request) {
-	// TODO logging
-	log.Printf("Request: %s, %s, %s, %s\n", r.URL, r.Method, r.RemoteAddr, r.Header.Get("User-Agent"))
+	// Log the request
+	Log(r)
+
 	// We assume the last part of the request URL is the article slug
 	path := strings.Split(r.URL.Path, "/")
 	slug := path[len(path)-1]
@@ -129,4 +130,10 @@ func CreateFrom(path string) (*Boondoggle, error) {
 		return b, err
 	}
 	return b, nil
+}
+
+// TODO Logging should be an interface
+func Log(r *http.Request) {
+	// By default, a timestamp will be written by the logger
+	log.Printf(`"%s %s" %s "%s"`, r.Method, r.URL, strings.SplitN(r.RemoteAddr, ":", 2)[0], r.Header.Get("User-Agent"))
 }
