@@ -1,6 +1,7 @@
 package boondoggle
 
 import (
+	"bytes"
 	"html/template"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 type Boondoggle struct {
 	articles        map[string]*Article
 	listTemplate    *template.Template
+	listCache       []byte
 	articleTemplate *template.Template
 	ordering        []*Article
 	attrs           map[string]interface{}
@@ -38,7 +40,6 @@ func (b *Boondoggle) LoadFrom(path string) error {
 	b.ordering = articles
 	Articles(articles).Sort()
 	for _, article := range articles {
-		article.Slug = Slugify(article.Title)
 		// TODO What to do about duplicate slugs?
 		b.articles[article.Slug] = article
 	}
@@ -68,16 +69,24 @@ func (b *Boondoggle) Route(w http.ResponseWriter, r *http.Request) {
 }
 
 func (b *Boondoggle) Article(w http.ResponseWriter, article *Article) {
-	// TODO use closure around a copy of the attrs? Cache the result?
-	b.attrs["Article"] = article
-	b.articleTemplate.Execute(w, b.attrs)
+	if len(article.Cache) == 0 {
+		b.attrs["Article"] = article
+		buffer := &bytes.Buffer{}
+		b.articleTemplate.Execute(buffer, b.attrs)
+		article.Cache = buffer.Bytes()
+	}
+	w.Write(article.Cache)
 }
 
 // List the available articles
 func (b *Boondoggle) List(w http.ResponseWriter) {
-	// TODO There should be a cached list of articles
-	b.attrs["Articles"] = b.ordering
-	b.listTemplate.Execute(w, b.attrs)
+	if len(b.listCache) == 0 {
+		b.attrs["Articles"] = b.ordering
+		buffer := &bytes.Buffer{}
+		b.listTemplate.Execute(buffer, b.attrs)
+		b.listCache = buffer.Bytes()
+	}
+	w.Write(b.listCache)
 }
 
 // TODO Or this could return the handler
@@ -106,6 +115,7 @@ var articleTmpl = `<!DOCTYPE html>
     <title>{{ .Article.Title }}</title>
   </head>
   <body>
+  	<h1>{{ .Article.Title }}</h1>
     {{ .Article.Body }}
   </body>
 </html>
@@ -117,6 +127,7 @@ func Create() *Boondoggle {
 		articles:        make(map[string]*Article),
 		listTemplate:    template.Must(template.New("list").Parse(listTmpl)),
 		articleTemplate: template.Must(template.New("article").Parse(articleTmpl)),
+		listCache:       make([]byte),
 		attrs:           make(map[string]interface{}),
 	}
 }
@@ -126,6 +137,9 @@ func CreateFrom(path string) (*Boondoggle, error) {
 	// Load the articles from the directory
 	b := Create()
 	err := b.LoadFrom(path)
+
+	// Cache everything
+
 	if err != nil {
 		return b, err
 	}
