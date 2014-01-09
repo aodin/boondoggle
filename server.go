@@ -127,7 +127,7 @@ func Create() *Boondoggle {
 		articles:        make(map[string]*Article),
 		listTemplate:    template.Must(template.New("list").Parse(listTmpl)),
 		articleTemplate: template.Must(template.New("article").Parse(articleTmpl)),
-		listCache:       make([]byte),
+		listCache:       make([]byte, 0),
 		attrs:           make(map[string]interface{}),
 	}
 }
@@ -137,9 +137,6 @@ func CreateFrom(path string) (*Boondoggle, error) {
 	// Load the articles from the directory
 	b := Create()
 	err := b.LoadFrom(path)
-
-	// Cache everything
-
 	if err != nil {
 		return b, err
 	}

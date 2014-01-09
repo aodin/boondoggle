@@ -36,10 +36,10 @@ func TestLoadArticles(t *testing.T) {
 	}
 	article := articles[1]
 	if len(article.Raw) != 107 {
-		t.Errorf("Unexpected raw content length: %s", len(article.Raw))
+		t.Errorf("Unexpected raw content length: %d", len(article.Raw))
 	}
-	if len(article.Body) != 162 {
-		t.Errorf("Unexpected body length: %s", len(article.Body))
+	if len(article.Body) != 140 {
+		t.Errorf("Unexpected body length: %d", len(article.Body))
 	}
 	if article.Title != "Second Post" {
 		t.Errorf("Unexpected article title: %s", article.Title)

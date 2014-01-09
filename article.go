@@ -43,7 +43,7 @@ func ParseArticle(content []byte) *Article {
 			}
 			index += 1
 		}
-		headers[header] = content[last: index - 1]
+		headers[header] = content[last : index-1]
 		last = index
 	}
 	article.Title = string(headers[0])
