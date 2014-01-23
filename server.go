@@ -68,7 +68,8 @@ func (b *Boondoggle) Route(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.NotFound(w, r)
+	// Redirect to the List
+	http.Redirect(w, r, path[0], 302)
 }
 
 func (b *Boondoggle) Article(w http.ResponseWriter, article *Article) {
