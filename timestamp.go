@@ -1,7 +1,6 @@
 package boondoggle
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -15,7 +14,7 @@ func (t Timestamp) String() string {
 	if t == n {
 		return ""
 	}
-	return fmt.Sprintf("%s, %s %s", t.Weekday(), t.Month(), t.Format("2, 2006"))
+	return t.Format("Monday, January 2, 2006")
 }
 
 func CreateTimestamp(input string) (Timestamp, error) {
@@ -27,9 +26,9 @@ func CreateTimestamp(input string) (Timestamp, error) {
 }
 
 func MustCreate(input string) Timestamp {
-	t, err := time.Parse("2006-01-02", input)
+	t, err := CreateTimestamp(input)
 	if err != nil {
 		panic(err)
 	}
-	return Timestamp{t}
+	return t
 }
