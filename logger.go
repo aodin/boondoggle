@@ -15,10 +15,14 @@ type DefaultLogger struct{}
 
 // By default, a timestamp will be written by the logger
 func (l *DefaultLogger) Log(r *http.Request) {
+	ip := strings.SplitN(r.Header.Get("X-Real-IP"), ":", 2)[0]
+	if ip == "" {
+		ip = strings.SplitN(r.RemoteAddr, ":", 2)[0]
+	}
 	log.Printf(
 		`%q %s %q`,
 		fmt.Sprintf(`%s %s`, r.Method, r.URL),
-		strings.SplitN(r.RemoteAddr, ":", 2)[0],
+		ip,
 		r.Header.Get("User-Agent"),
 	)
 }
