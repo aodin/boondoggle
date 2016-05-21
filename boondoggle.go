@@ -19,8 +19,8 @@ const (
 type Boondoggle struct {
 	Articles Articles
 
-	ByTitle map[string]Article  // Includes path - TODO pointer?
-	ByTag   map[string]Articles // TODO pointer?
+	ByTitle map[string]*Article // TODO Include full path?
+	ByTag   map[string][]*Article
 
 	// TODO Metadata?
 	BuildTime time.Time
@@ -69,8 +69,8 @@ func (bd *Boondoggle) ReadDirectory(path string) error {
 // directly - use ParseDirectory instead
 func New() *Boondoggle {
 	return &Boondoggle{
-		ByTitle:   make(map[string]Article),
-		ByTag:     make(map[string]Articles),
+		ByTitle:   make(map[string]*Article),
+		ByTag:     make(map[string][]*Article),
 		BuildTime: time.Now(),
 	}
 }
@@ -88,6 +88,7 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 	// transformers have been given
 	if len(steps) == 0 {
 		steps = []Transformer{
+			ParseFilename,
 			ExtractTitle,
 			ExtractTags,
 			PygmentizeCode,
