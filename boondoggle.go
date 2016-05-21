@@ -4,6 +4,7 @@ Boondoggle is a static site generator written in Go.
 package boondoggle
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
@@ -92,14 +93,18 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 			ExtractTitle,
 			ExtractTags,
 			PygmentizeCode,
+			CauseError,
 			MarkdownToHTML,
 		}
 	}
 
-	for _, article := range bd.Articles {
+	for i, article := range bd.Articles {
 		for _, step := range steps {
 			if err := step(&article); err != nil {
-				return nil, err
+				return nil, fmt.Errorf(
+					`Error while transforming article '%s' (#%d) with %s: %s`,
+					article, i, step, err,
+				)
 			}
 		}
 	}

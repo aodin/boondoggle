@@ -27,7 +27,7 @@ type Article struct {
 	Raw      []byte // The entire raw file - TODO use io.Reader?
 }
 
-func (article *Article) String() string {
+func (article Article) String() string {
 	return article.Title
 }
 
