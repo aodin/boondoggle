@@ -1,3 +1,6 @@
+/*
+Boondoggle is a static site generator written in Go.
+*/
 package boondoggle
 
 import (
@@ -8,8 +11,11 @@ import (
 	"strings"
 )
 
+// Boondoggle builds .HTML files from a directory of markdown files.
 type Boondoggle struct {
-	articles        map[string]Article
+	articles map[string]Article   // By title - including path!
+	tags     map[string][]Article // TODO pointer?
+
 	listTemplate    *template.Template
 	listCache       []byte
 	articleTemplate *template.Template
@@ -17,6 +23,8 @@ type Boondoggle struct {
 	attrs           map[string]interface{}
 	logger          RequestLogger
 }
+
+// TODO AllTags returns tags in alphabetical order
 
 func (b *Boondoggle) ArticleTemplate(tmpl *template.Template) *Boondoggle {
 	b.articleTemplate = tmpl

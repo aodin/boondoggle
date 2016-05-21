@@ -10,20 +10,24 @@ import (
 
 // Article is a single article
 type Article struct {
-	Slug            string
-	Date            Timestamp // TODO time.Time
-	Title           string
-	Subtitle        string
-	Byline          string
-	Body            template.HTML
+	// Content
+	Title    string
+	Slug     string
+	Date     Timestamp // TODO time.Time
+	Subtitle string
+	Byline   string
+	HTML     template.HTML
+
+	// Meta
 	WordCount       uint64
 	TableOfContents TableOfContents
 	LinesOfCode     uint64
 	Tags            []string
 
 	// TODO need methods to create buffers/scanners and reset raw
-	Raw   []byte // The entire raw file - TODO un-exported
-	Cache []byte // The executed template - TODO delete
+	Body  template.HTML // Deprecated
+	Raw   []byte        // The entire raw file - TODO un-exported
+	Cache []byte        // The executed template - TODO delete
 }
 
 func (article *Article) String() string {
