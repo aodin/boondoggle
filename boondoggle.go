@@ -93,7 +93,6 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 			ExtractTitle,
 			ExtractTags,
 			PygmentizeCode,
-			CauseError,
 			MarkdownToHTML,
 		}
 	}
@@ -107,6 +106,8 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 				)
 			}
 		}
+		// Replace the original article with the transformed version
+		bd.Articles[i] = article
 	}
 
 	return bd, nil

@@ -26,7 +26,7 @@ func ParseFilename(article *Article) (err error) {
 			article.Slug = Slug(article.Title)
 		}
 	} else {
-		article.Filename = parts[0]
+		article.Title = parts[0]
 		article.Slug = Slug(article.Title)
 	}
 

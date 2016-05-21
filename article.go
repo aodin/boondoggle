@@ -1,6 +1,7 @@
 package boondoggle
 
 import (
+	"bytes"
 	"html/template"
 	"time"
 )
@@ -27,8 +28,23 @@ type Article struct {
 	Raw      []byte // The entire raw file - TODO use io.Reader?
 }
 
+// String returns the Article Title, falling back to Filename if Title does
+// not exist
 func (article Article) String() string {
+	if article.Title == "" {
+		return article.Filename
+	}
 	return article.Title
+}
+
+// Render renders the Article with the given Template
+func (article Article) Render(tmpl *template.Template) ([]byte, error) {
+	var b []byte
+	buffer := bytes.NewBuffer(b)
+	if err := tmpl.Execute(buffer, article); err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
 }
 
 // ParseMarkdown creates an Article from the given markdown,
