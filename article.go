@@ -107,3 +107,18 @@ func LoadArticles(path string) (articles []Article, err error) {
 	}
 	return
 }
+
+// ParseMarkdown creates an Article from the given markdown,
+// optionally running it through any given transformers.
+func ParseMarkdown(markdown []byte, pipeline ...Transformer) (Article, error) {
+	article := Article{Raw: markdown}
+
+	// Always call MarkdownToHTML at the end
+	// TODO prevent MarkdownToHTML from being run multiple times?
+	for _, step := range append(pipeline, MarkdownToHTML) {
+		if err := step(&article); err != nil {
+			return article, err
+		}
+	}
+	return article, nil
+}

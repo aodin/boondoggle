@@ -21,7 +21,7 @@ func TestParseTags(t *testing.T) {
 	// TODO table tests are funky looking with multiline strings
 	md1 := `#Title
 
-[//]: # (golang, SQL ,data science)  
+[tags]: <> (golang, SQL ,data science)  
 
 More Text `
 	article = Article{Raw: []byte(md1)}

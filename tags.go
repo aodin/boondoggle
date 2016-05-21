@@ -7,7 +7,7 @@ import (
 )
 
 // TODO Rather unfriendly
-const TagsPrefix = "[//]: # ("
+const TagsPrefix = "[tags]: <> ("
 
 // ParseTags will parse the tags from the raw markdown. The tags line
 // must be present within the first 5 lines of the markdown file.
