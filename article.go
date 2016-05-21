@@ -19,6 +19,7 @@ type Article struct {
 	WordCount       uint64
 	TableOfContents TableOfContents
 	LinesOfCode     uint64
+	Tags            []string
 
 	// TODO need methods to create buffers/scanners and reset raw
 	Raw   []byte // The entire raw file - TODO un-exported

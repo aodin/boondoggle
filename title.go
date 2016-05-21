@@ -24,8 +24,8 @@ func readRemainder(scanner *bufio.Scanner) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-// ExtractTitle will remove an H1 title from the first line of the
-// markdown file. It will also remove the title from the raw markdown.
+// ExtractTitle will parse and remove an atx or setext H1 title from the first
+// line (and second if setext) of the markdown file.
 func ExtractTitle(article *Article) (err error) {
 	buffer := bytes.NewBuffer(article.Raw)
 	scanner := bufio.NewScanner(buffer)
