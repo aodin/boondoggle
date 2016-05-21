@@ -9,11 +9,11 @@ import (
 )
 
 type Boondoggle struct {
-	articles        map[string]*Article
+	articles        map[string]Article
 	listTemplate    *template.Template
 	listCache       []byte
 	articleTemplate *template.Template
-	ordering        []*Article
+	ordering        []Article
 	attrs           map[string]interface{}
 	logger          RequestLogger
 }
@@ -39,7 +39,7 @@ func (b *Boondoggle) LoadFrom(path string) error {
 		return err
 	}
 	b.ordering = articles
-	Articles(articles).Sort()
+	Articles(articles).SortByDate()
 	for _, article := range articles {
 		// TODO What to do about duplicate slugs?
 		b.articles[article.Slug] = article
@@ -72,7 +72,7 @@ func (b *Boondoggle) Route(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, path[0], 302)
 }
 
-func (b *Boondoggle) Article(w http.ResponseWriter, article *Article) {
+func (b *Boondoggle) Article(w http.ResponseWriter, article Article) {
 	if len(article.Cache) == 0 {
 		b.attrs["Article"] = article
 		buffer := &bytes.Buffer{}
@@ -128,7 +128,7 @@ var articleTmpl = `<!DOCTYPE html>
 // Create an empty boondoggle
 func Create() *Boondoggle {
 	return &Boondoggle{
-		articles:        make(map[string]*Article),
+		articles:        make(map[string]Article),
 		listTemplate:    template.Must(template.New("list").Parse(listTmpl)),
 		articleTemplate: template.Must(template.New("article").Parse(articleTmpl)),
 		listCache:       make([]byte, 0),

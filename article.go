@@ -5,33 +5,36 @@ import (
 	"html/template"
 	"io/ioutil"
 	"path/filepath"
-	"sort"
 	"strings"
 )
 
+// Article is a single article
 type Article struct {
-	Slug     string
-	Date     Timestamp
-	Title    string
-	Subtitle string
-	Byline   string
-	Body     template.HTML
-	Raw      []byte // The entire raw file
-	Cache    []byte // The executed template
+	Slug            string
+	Date            Timestamp // TODO time.Time
+	Title           string
+	Subtitle        string
+	Byline          string
+	Body            template.HTML
+	WordCount       uint64
+	TableOfContents TableOfContents
+	LinesOfCode     uint64
+	Raw             []byte // The entire raw file
+	Cache           []byte // The executed template
 }
 
 func (article *Article) String() string {
 	return article.Title
 }
 
-func ParseArticle(content []byte) *Article {
+func ParseArticle(content []byte) Article {
 	// Remove the title and an optional date from the content
 	index := 0
 	last := 0
 	length := len(content)
 
 	// TODO Named return type won't work?
-	article := &Article{Raw: content}
+	article := Article{Raw: content}
 
 	var headers [3][]byte
 	for header, _ := range headers {
@@ -53,7 +56,7 @@ func ParseArticle(content []byte) *Article {
 	return article
 }
 
-func LoadArticles(path string) (articles []*Article, err error) {
+func LoadArticles(path string) (articles []Article, err error) {
 	entries, err := ioutil.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -96,37 +99,4 @@ func LoadArticles(path string) (articles []*Article, err error) {
 		articles = append(articles, article)
 	}
 	return
-}
-
-type Articles []*Article
-
-// Implement the sort.Interface for sorting
-func (a Articles) Len() int {
-	return len(a)
-}
-
-func (a Articles) Swap(i, j int) {
-	a[i], a[j] = a[j], a[i]
-}
-
-type ByTitle struct {
-	Articles
-}
-
-type ByDate struct {
-	Articles
-}
-
-func (a ByDate) Less(i, j int) bool {
-	x, y := a.Articles[i], a.Articles[j]
-	if x.Date.Unix() == y.Date.Unix() {
-		// Sort alphabetically
-		return x.Title < y.Title
-	}
-	// Most recent articles should be first
-	return x.Date.Unix() > y.Date.Unix()
-}
-
-func (a Articles) Sort() {
-	sort.Sort(ByDate{a})
 }

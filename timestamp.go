@@ -1,17 +1,15 @@
 package boondoggle
 
-import (
-	"time"
-)
+import "time"
+
+// TODO input and output layouts
 
 type Timestamp struct {
 	time.Time
 }
 
 func (t Timestamp) String() string {
-	// TODO Ugh, how to check for a nil time?
-	n := Timestamp{}
-	if t == n {
+	if t.IsZero() {
 		return ""
 	}
 	return t.Format("Monday, January 2, 2006")
