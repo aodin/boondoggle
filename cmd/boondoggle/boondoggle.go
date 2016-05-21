@@ -11,7 +11,7 @@ func main() {
 	content := []byte(`Example Article
 =======
 
-[tags]: <> (SQL, python)
+<!-- tags: SQL, python -->
 
 I am a paragraph. I contain words.`)
 
@@ -30,7 +30,7 @@ func main() {
 
 	// Call boondoggle with the following Transformers
 	pipeline := []boondoggle.Transformer{
-		boondoggle.ParseTags,
+		boondoggle.ExtractTags,
 		boondoggle.ExtractTitle,
 	}
 

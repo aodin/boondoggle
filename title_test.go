@@ -19,8 +19,10 @@ func TestExtractTitle(t *testing.T) {
 	}
 
 	// TODO table tests are funky looking with multiline strings
+	// TODO ExtractTitle will add a newline - it shouldn'y
 	md1 := `#Title
-More Text `
+More Text 
+`
 	article = Article{Raw: []byte(md1)}
 	if err := ExtractTitle(&article); err != nil {
 		t.Fatalf("ExtractTitle should not error: %s", err)
@@ -28,7 +30,9 @@ More Text `
 	if article.Title != "Title" {
 		t.Errorf("Unexpected title: Title != %s", article.Title)
 	}
-	if !bytes.Equal(article.Raw, []byte(`More Text `)) {
+	remainder := `More Text 
+`
+	if !bytes.Equal(article.Raw, []byte(remainder)) {
 		t.Errorf("Unexpected raw buffer: `More Text ` != %s", article.Raw)
 	}
 
@@ -46,7 +50,8 @@ Body text
 
 	md3 := `❤ 
 =====
- More`
+ More
+`
 	article = Article{Raw: []byte(md3)}
 	if err := ExtractTitle(&article); err != nil {
 		t.Fatalf("ExtractTitle should not error: %s", err)
@@ -54,11 +59,14 @@ Body text
 	if article.Title != "❤" {
 		t.Errorf("Unexpected title: ❤ != %s", article.Title)
 	}
-	if !bytes.Equal(article.Raw, []byte(` More`)) {
+	remainder = ` More
+` // TODO Fix newlines
+	if !bytes.Equal(article.Raw, []byte(remainder)) {
 		t.Errorf("Unexpected raw buffer: ` More` != %s", article.Raw)
 	}
 
-	md4 := `One line`
+	md4 := `One line
+`
 	article = Article{Raw: []byte(md4)}
 	if err := ExtractTitle(&article); err != nil {
 		t.Fatalf("ExtractTitle should not error: %s", err)

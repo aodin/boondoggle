@@ -7,24 +7,21 @@ import (
 )
 
 // TODO Rather unfriendly
-const TagsPrefix = "[tags]: <> ("
+const TagsPrefix = "<!-- tags:"
 
-// ParseTags will parse the tags from the raw markdown. The tags line
-// must be present within the first 5 lines of the markdown file.
-// Tags will be slugified after parsing. Only one line of tags is allowed.
-// The tags line will not be removed since it is a markdown "comment":
-// http://stackoverflow.com/a/20885980
-// TODO For cross platform support, it should probably be removed
-func ParseTags(article *Article) error {
-	buffer := bytes.NewBuffer(article.Raw)
-	scanner := bufio.NewScanner(buffer)
+// ExtractTags will parse and remove the tags from the raw markdown. The
+// Tags will be slugified after parsing.
+func ExtractTags(article *Article) (err error) {
+	scanner := bufio.NewScanner(bytes.NewBuffer(article.Raw))
 
-	n := 0
-	for scanner.Scan() && n < 5 {
+	var b []byte
+	out := bytes.NewBuffer(b)
+
+	for scanner.Scan() {
 		text := scanner.Text()
 		if strings.HasPrefix(text, TagsPrefix) {
 			text = strings.TrimPrefix(text, TagsPrefix)
-			text = strings.TrimRight(text, ") ")
+			text = strings.TrimRight(text, "-> ")
 
 			tags := strings.Split(text, ",")
 			for _, tag := range tags {
@@ -33,12 +30,16 @@ func ParseTags(article *Article) error {
 					article.Tags = append(article.Tags, tag)
 				}
 			}
-			break
+		} else {
+			if _, err = out.WriteString(text + NewLine); err != nil {
+				return
+			}
 		}
-		n += 1
 	}
-	return nil
+
+	article.Raw = out.Bytes()
+	return
 }
 
-// ParseTags must have the Transformer function signature
-var _ = Transformer(ParseTags)
+// ExtractTags must have the Transformer function signature
+var _ = Transformer(ExtractTags)

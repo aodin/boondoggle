@@ -10,6 +10,7 @@ const (
 	TitleAtx    = "#"
 	TitleSetext = "="
 	Space       = " "
+	NewLine     = "\n"
 )
 
 // TODO Is there a better way to get the unread scanner bytes?
@@ -20,12 +21,16 @@ func readRemainder(scanner *bufio.Scanner) ([]byte, error) {
 		if _, err := buffer.Write(scanner.Bytes()); err != nil {
 			return nil, err
 		}
+		if _, err := buffer.WriteString(NewLine); err != nil {
+			return nil, err
+		}
 	}
 	return buffer.Bytes(), nil
 }
 
 // ExtractTitle will parse and remove an atx or setext H1 title from the first
 // line (and second if setext) of the markdown file.
+// TODO ExtractTitle will add a newline - it shouldn'y
 func ExtractTitle(article *Article) (err error) {
 	buffer := bytes.NewBuffer(article.Raw)
 	scanner := bufio.NewScanner(buffer)
