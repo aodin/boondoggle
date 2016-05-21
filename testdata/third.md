@@ -1,5 +1,5 @@
 # Third
-[tags]: <> (markdown,sql,go)
+<!-- tags: SQL, python -->
 
 Text before.
 

@@ -6,9 +6,6 @@ import (
 	"strings"
 )
 
-// TODO Rather unfriendly
-const TagsPrefix = "<!-- tags:"
-
 // ExtractTags will parse and remove the tags from the raw markdown. The
 // Tags will be slugified after parsing.
 func ExtractTags(article *Article) (err error) {

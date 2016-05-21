@@ -6,13 +6,6 @@ import (
 	"strings"
 )
 
-const (
-	TitleAtx    = "#"
-	TitleSetext = "="
-	Space       = " "
-	NewLine     = "\n"
-)
-
 // TODO Is there a better way to get the unread scanner bytes?
 func readRemainder(scanner *bufio.Scanner) ([]byte, error) {
 	var b []byte

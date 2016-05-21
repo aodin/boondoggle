@@ -4,154 +4,104 @@ Boondoggle is a static site generator written in Go.
 package boondoggle
 
 import (
-	"bytes"
-	"html/template"
-	"log"
-	"net/http"
+	"io/ioutil"
+	"path/filepath"
+	"sort"
 	"strings"
+	"time"
+)
+
+const (
+	MarkdownExt = ".md" // MarkdownExt is the common markdown file ending
 )
 
 // Boondoggle builds .HTML files from a directory of markdown files.
 type Boondoggle struct {
-	articles map[string]Article   // By title - including path!
-	tags     map[string][]Article // TODO pointer?
+	Articles Articles
 
-	listTemplate    *template.Template
-	listCache       []byte
-	articleTemplate *template.Template
-	ordering        []Article
-	attrs           map[string]interface{}
-	logger          RequestLogger
+	ByTitle map[string]Article  // Includes path - TODO pointer?
+	ByTag   map[string]Articles // TODO pointer?
+
+	// TODO Metadata?
+	BuildTime time.Time
 }
 
-// TODO AllTags returns tags in alphabetical order
-
-func (b *Boondoggle) ArticleTemplate(tmpl *template.Template) *Boondoggle {
-	b.articleTemplate = tmpl
-	return b
+// TODO Tags returns tags in alphabetical order
+func (bd Boondoggle) Tags() (tags []string) {
+	for tag, _ := range bd.ByTag {
+		tags = append(tags, tag)
+	}
+	sort.Strings(tags)
+	return
 }
 
-func (b *Boondoggle) ListTemplate(tmpl *template.Template) *Boondoggle {
-	b.listTemplate = tmpl
-	return b
-}
-
-func (b *Boondoggle) Attr(key string, value interface{}) *Boondoggle {
-	b.attrs[key] = value
-	return b
-}
-
-func (b *Boondoggle) LoadFrom(path string) error {
-	articles, err := LoadArticles(path)
+func (bd *Boondoggle) ReadDirectory(path string) error {
+	// Parse each file in the directory
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return err
 	}
-	b.ordering = articles
-	Articles(articles).SortByDate()
-	for _, article := range articles {
-		// TODO What to do about duplicate slugs?
-		b.articles[article.Slug] = article
+
+	for _, file := range files {
+		name := file.Name()
+		extension := strings.ToLower(filepath.Ext(name))
+
+		if extension != MarkdownExt {
+			continue
+		}
+
+		fullpath := filepath.Join(path, name)
+
+		// TODO or use io.Reader?
+		content, err := ioutil.ReadFile(fullpath)
+		if err != nil {
+			return err
+		}
+
+		article := NewArticle(name)
+		article.Raw = content
+		bd.Articles = append(bd.Articles, article)
 	}
-	log.Printf("Loaded %d Articles\n", len(articles))
 	return nil
 }
 
-// Route to the requested article, if it exists
-func (b *Boondoggle) Route(w http.ResponseWriter, r *http.Request) {
-	// Log the request
-	b.logger.Log(r)
-
-	// We assume the last part of the request URL is the article slug
-	path := strings.Split(r.URL.Path, "/")
-	slug := path[len(path)-1]
-	article, exists := b.articles[slug]
-	if exists {
-		b.Article(w, article)
-		return
-	}
-
-	// List the articles if it was an empty path
-	if slug == "" {
-		b.List(w)
-		return
-	}
-
-	// Redirect to the List
-	http.Redirect(w, r, path[0], 302)
-}
-
-func (b *Boondoggle) Article(w http.ResponseWriter, article Article) {
-	if len(article.Cache) == 0 {
-		b.attrs["Article"] = article
-		buffer := &bytes.Buffer{}
-		b.articleTemplate.Execute(buffer, b.attrs)
-		article.Cache = buffer.Bytes()
-	}
-	w.Write(article.Cache)
-}
-
-// List the available articles
-func (b *Boondoggle) List(w http.ResponseWriter) {
-	if len(b.listCache) == 0 {
-		b.attrs["Articles"] = b.ordering
-		buffer := &bytes.Buffer{}
-		b.listTemplate.Execute(buffer, b.attrs)
-		b.listCache = buffer.Bytes()
-	}
-	w.Write(b.listCache)
-}
-
-// TODO Or this could return the handler
-func (b *Boondoggle) Handler(w http.ResponseWriter, r *http.Request) {
-	b.Route(w, r)
-}
-
-var listTmpl = `<!DOCTYPE html>
-<html>
-  <head>
-    <title>Articles</title>
-  </head>
-  <body>
-    <h1>Articles</h1>
-    <ul>
-    {{ range $article := .Articles }}
-      <li><a href="./{{ $article.Slug }}">{{ $article.Title }}</a></li>{{ end }}
-    </ul>
-  </body>
-</html>
-`
-
-var articleTmpl = `<!DOCTYPE html>
-<html>
-  <head>
-    <title>{{ .Article.Title }}</title>
-  </head>
-  <body>
-  	<h1>{{ .Article.Title }}</h1>
-    {{ .Article.Body }}
-  </body>
-</html>
-`
-
-// Create an empty boondoggle
-func Create() *Boondoggle {
+// New creates a new Boondoggle. The New method does not need to be used
+// directly - use ParseDirectory instead
+func New() *Boondoggle {
 	return &Boondoggle{
-		articles:        make(map[string]Article),
-		listTemplate:    template.Must(template.New("list").Parse(listTmpl)),
-		articleTemplate: template.Must(template.New("article").Parse(articleTmpl)),
-		listCache:       make([]byte, 0),
-		attrs:           make(map[string]interface{}),
-		logger:          defaultLogger,
+		ByTitle:   make(map[string]Article),
+		ByTag:     make(map[string]Articles),
+		BuildTime: time.Now(),
 	}
 }
 
-// Create a boondoggle by loading articles from the given directory
-func CreateFrom(path string) (*Boondoggle, error) {
-	// Load the articles from the directory
-	b := Create()
-	err := b.LoadFrom(path)
-	if err != nil {
-		return b, err
+// ParseDirectory will parse all markdown files in the given directory
+// TODO Walk the entire directory structure?
+// TODO noop HTML files?
+func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
+	bd := New()
+	if err := bd.ReadDirectory(path); err != nil {
+		return nil, err
 	}
-	return b, nil
+
+	// For each article, perform the default actions, unless alternative
+	// transformers have been given
+	if len(steps) == 0 {
+		steps = []Transformer{
+			ExtractTitle,
+			ExtractTags,
+			PygmentizeCode,
+			MarkdownToHTML,
+		}
+	}
+
+	for _, article := range bd.Articles {
+		for _, step := range steps {
+			if err := step(&article); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return bd, nil
 }

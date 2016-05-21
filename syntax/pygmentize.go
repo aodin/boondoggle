@@ -64,4 +64,4 @@ func (h Pygmentize) Highlight(text []byte, lang string) ([]byte, error) {
 	return b, nil
 }
 
-// TODO constructor that checks for presence of "pygmentize"
+// TODO add a constructor that checks for presence of "pygmentize"?
