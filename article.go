@@ -19,8 +19,10 @@ type Article struct {
 	WordCount       uint64
 	TableOfContents TableOfContents
 	LinesOfCode     uint64
-	Raw             []byte // The entire raw file
-	Cache           []byte // The executed template
+
+	// TODO need methods to create buffers/scanners and reset raw
+	Raw   []byte // The entire raw file - TODO un-exported
+	Cache []byte // The executed template - TODO delete
 }
 
 func (article *Article) String() string {
