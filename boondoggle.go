@@ -23,7 +23,7 @@ type Boondoggle struct {
 	ByTitle map[string]*Article // TODO Include full path?
 	ByTag   map[string][]*Article
 
-	// TODO Metadata?
+	Metadata  Attrs
 	BuildTime time.Time
 }
 
@@ -72,6 +72,7 @@ func New() *Boondoggle {
 	return &Boondoggle{
 		ByTitle:   make(map[string]*Article),
 		ByTag:     make(map[string][]*Article),
+		Metadata:  Attrs{},
 		BuildTime: time.Now(),
 	}
 }
@@ -90,6 +91,7 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 	if len(steps) == 0 {
 		steps = []Transformer{
 			ParseFilename,
+			ExtractFrontMatter,
 			ExtractTitle,
 			ExtractTags,
 			PygmentizeCode,

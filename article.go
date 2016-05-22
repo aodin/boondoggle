@@ -21,7 +21,7 @@ type Article struct {
 	TableOfContents Section
 	LinesOfCode     uint64
 	Tags            []string
-	Metadata        map[string]interface{}
+	Metadata        Attrs
 
 	// TODO need methods to create buffers/scanners and reset raw
 	Filename string
@@ -37,8 +37,8 @@ func (article Article) String() string {
 	return article.Title
 }
 
-// Render renders the Article with the given Template
-func (article Article) Render(tmpl *template.Template) ([]byte, error) {
+// RenderWith renders the Article with the given Template
+func (article Article) RenderWith(tmpl *template.Template) ([]byte, error) {
 	var b []byte
 	buffer := bytes.NewBuffer(b)
 	if err := tmpl.Execute(buffer, article); err != nil {
@@ -50,10 +50,8 @@ func (article Article) Render(tmpl *template.Template) ([]byte, error) {
 // ParseMarkdown creates an Article from the given markdown,
 // optionally running it through any given transformers.
 func ParseMarkdown(markdown []byte, pipeline ...Transformer) (Article, error) {
-	article := Article{
-		Raw:      markdown,
-		Metadata: make(map[string]interface{}),
-	}
+	article := newArticle()
+	article.Raw = markdown
 
 	// Always call MarkdownToHTML at the end
 	// TODO prevent MarkdownToHTML from being run multiple times?
@@ -67,8 +65,13 @@ func ParseMarkdown(markdown []byte, pipeline ...Transformer) (Article, error) {
 
 // NewArticle creates a new article
 func NewArticle(filename string) Article {
+	article := newArticle()
+	article.Filename = filename
+	return article
+}
+
+func newArticle() Article {
 	return Article{
-		Metadata: make(map[string]interface{}),
-		Filename: filename,
+		Metadata: Attrs{},
 	}
 }

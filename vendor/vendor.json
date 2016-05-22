@@ -25,6 +25,12 @@
 			"path": "golang.org/x/text/unicode/norm",
 			"revision": "bfad311ce93436dc888b40d76c78f99dc3104473",
 			"revisionTime": "2015-01-14T16:03:37Z"
+		},
+		{
+			"checksumSHA1": "+OgOXBoiQ+X+C2dsAeiOHwBIEH0=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "a83829b6f1293c91addabc89d0571c246397bbf4",
+			"revisionTime": "2016-03-01T20:40:22Z"
 		}
 	],
 	"rootPath": "github.com/aodin/boondoggle"

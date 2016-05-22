@@ -19,14 +19,7 @@ func ExtractTags(article *Article) (err error) {
 		if strings.HasPrefix(text, TagsPrefix) {
 			text = strings.TrimPrefix(text, TagsPrefix)
 			text = strings.TrimRight(text, "-> ")
-
-			tags := strings.Split(text, ",")
-			for _, tag := range tags {
-				// TODO Allow unicode tags?
-				if tag = Slug(tag); tag != "" {
-					article.Tags = append(article.Tags, tag)
-				}
-			}
+			article.Tags = normalizeTags(strings.Split(text, ","))
 		} else {
 			if _, err = out.WriteString(text + NewLine); err != nil {
 				return
@@ -35,6 +28,16 @@ func ExtractTags(article *Article) (err error) {
 	}
 
 	article.Raw = out.Bytes()
+	return
+}
+
+func normalizeTags(in []string) (out []string) {
+	for _, tag := range in {
+		// TODO Allow unicode tags?
+		if tag = Slug(tag); tag != "" {
+			out = append(out, tag)
+		}
+	}
 	return
 }
 
