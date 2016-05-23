@@ -20,8 +20,8 @@ const (
 type Boondoggle struct {
 	Articles Articles
 
-	ByTitle map[string]*Article // TODO Include full path?
-	ByTag   map[string][]*Article
+	ByTitle map[string]Article // TODO Include full path?
+	ByTag   map[string][]Article
 
 	Metadata  Attrs
 	BuildTime time.Time
@@ -70,8 +70,8 @@ func (bd *Boondoggle) ReadDirectory(path string) error {
 // directly - use ParseDirectory instead
 func New() *Boondoggle {
 	return &Boondoggle{
-		ByTitle:   make(map[string]*Article),
-		ByTag:     make(map[string][]*Article),
+		ByTitle:   make(map[string]Article),
+		ByTag:     make(map[string][]Article),
 		Metadata:  Attrs{},
 		BuildTime: time.Now(),
 	}
@@ -113,7 +113,7 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 
 		// Aggregate tags
 		for _, tag := range article.Tags {
-			bd.ByTag[tag] = append(bd.ByTag[tag], &bd.Articles[i])
+			bd.ByTag[tag] = append(bd.ByTag[tag], article)
 		}
 	}
 
