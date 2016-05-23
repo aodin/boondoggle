@@ -110,7 +110,15 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 		}
 		// Replace the original article with the transformed version
 		bd.Articles[i] = article
+
+		// Aggregate tags
+		for _, tag := range article.Tags {
+			bd.ByTag[tag] = append(bd.ByTag[tag], &article)
+		}
 	}
+
+	// Sort
+	bd.Articles.SortByDate()
 
 	return bd, nil
 }
