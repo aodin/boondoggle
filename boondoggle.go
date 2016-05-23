@@ -113,7 +113,7 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 
 		// Aggregate tags
 		for _, tag := range article.Tags {
-			bd.ByTag[tag] = append(bd.ByTag[tag], &article)
+			bd.ByTag[tag] = append(bd.ByTag[tag], &bd.Articles[i])
 		}
 	}
 

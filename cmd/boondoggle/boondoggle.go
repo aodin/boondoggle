@@ -44,7 +44,7 @@ func main() {
 
 	// Does the destination directory exist?
 	articleDir := filepath.Join(outputDir, "articles")
-	if err = os.MkdirAll(articleDir, 0700); err != nil {
+	if err = os.MkdirAll(articleDir, 0755); err != nil {
 		log.Fatalf("Error while creating output directory: %s", err)
 	}
 
@@ -80,8 +80,27 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error while opening file for index: %s", err)
 		}
+		defer f.Close()
 		if err := indexTmpl.Execute(f, attrs); err != nil {
-			log.Fatalf("Error while writing index for %s", err)
+			log.Fatalf("Error while writing index: %s", err)
+		}
+	}
+
+	// Render the Articles index
+	articlesTmpl := tmpls["articles"]
+	if articlesTmpl != nil {
+		attrs := map[string]interface{}{
+			"Articles": bd.Articles,
+		}
+
+		indexPath := filepath.Join(articleDir, "index.html")
+		f, err := os.OpenFile(indexPath, flags, 0644)
+		if err != nil {
+			log.Fatalf("Error while opening file for index: %s", err)
+		}
+		defer f.Close()
+		if err := articlesTmpl.Execute(f, attrs); err != nil {
+			log.Fatalf("Error while writing articles index: %s", err)
 		}
 	}
 
@@ -114,5 +133,31 @@ func main() {
 			)
 		}
 		log.Printf("Wrote %d bytes for %s", n, article.Slug)
+	}
+
+	tagsDir := filepath.Join(outputDir, "tags")
+	if err = os.MkdirAll(tagsDir, 0755); err != nil {
+		log.Fatalf("Error while creating tags directory: %s", err)
+	}
+
+	// Write the tags
+	tagTmpl := tmpls["tag"]
+	if tagTmpl != nil {
+		log.Printf("Writing %d tags...", len(bd.ByTag))
+		for tag, articles := range bd.ByTag {
+			attrs := map[string]interface{}{
+				"Tag":      tag,
+				"Articles": articles,
+			}
+			outputPath := filepath.Join(tagsDir, tag+".html")
+			f, err := os.OpenFile(outputPath, flags, 0644)
+			if err != nil {
+				log.Fatalf("Error while opening file for tag %s: %s", tag, err)
+			}
+			defer f.Close()
+			if err := tagTmpl.Execute(f, attrs); err != nil {
+				log.Fatalf("Error while writing tag %s: %s", tag, err)
+			}
+		}
 	}
 }
