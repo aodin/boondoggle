@@ -11,6 +11,7 @@ import (
 
 type previewer struct {
 	minLength int
+	truncate  bool // Do not include opening and closing tag
 }
 
 func (pre previewer) Parse(article *Article) error {
@@ -18,6 +19,7 @@ func (pre previewer) Parse(article *Article) error {
 	tokenizer := html.NewTokenizer(strings.NewReader(string(article.HTML)))
 	depth := 0
 	previewLength := 0
+	alreadyOpenedTag := false
 
 Previewing:
 	for {
@@ -41,16 +43,31 @@ Previewing:
 			if len(name) == 1 && name[0] == 'p' {
 				if tokenType == html.StartTagToken {
 					depth += 1
+					if !(pre.truncate && !alreadyOpenedTag) {
+						if _, err := preview.Write(tokenizer.Raw()); err != nil {
+							return err
+						}
+					}
+					alreadyOpenedTag = true
 				} else {
 					depth -= 1
 				}
-				if _, err := preview.Write(tokenizer.Raw()); err != nil {
-					return err
-				}
+
 				if tokenType == html.EndTagToken {
 					if previewLength > pre.minLength {
+						if !pre.truncate {
+							if _, err := preview.Write(tokenizer.Raw()); err != nil {
+								return err
+							}
+						}
 						// That's enough
 						break Previewing
+					} else {
+						if !(pre.truncate && !alreadyOpenedTag) {
+							if _, err := preview.Write(tokenizer.Raw()); err != nil {
+								return err
+							}
+						}
 					}
 				}
 
@@ -70,5 +87,10 @@ var _ = Transformer(previewer{}.Parse)
 
 func Preview(minLength int) Transformer {
 	pre := previewer{minLength: minLength}
+	return pre.Parse
+}
+
+func TruncatedTagPreview(minLength int) Transformer {
+	pre := previewer{minLength: minLength, truncate: true}
 	return pre.Parse
 }
