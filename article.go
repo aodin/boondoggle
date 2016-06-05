@@ -17,6 +17,7 @@ type Article struct {
 	HTML     template.HTML
 
 	// Meta
+	Preview         template.HTML
 	WordCount       uint64
 	TableOfContents Section
 	LinesOfCode     uint64
