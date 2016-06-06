@@ -96,7 +96,7 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 			ExtractTags,
 			PygmentizeCode,
 			MarkdownToHTML,
-			Preview(64),
+			TruncatedTagPreview(200),
 		}
 	}
 
