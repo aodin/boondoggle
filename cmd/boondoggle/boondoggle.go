@@ -73,6 +73,7 @@ func main() {
 		previews := bd.Articles[:n]
 		attrs := map[string]interface{}{
 			"Articles": previews,
+			"Now":      bd.BuildTime,
 		}
 
 		indexPath := filepath.Join(outputDir, "index.html")
@@ -91,6 +92,7 @@ func main() {
 	if articlesTmpl != nil {
 		attrs := map[string]interface{}{
 			"Articles": bd.Articles,
+			"Now":      bd.BuildTime,
 		}
 
 		indexPath := filepath.Join(articleDir, "index.html")
@@ -148,6 +150,7 @@ func main() {
 			attrs := map[string]interface{}{
 				"Tag":      tag,
 				"Articles": articles,
+				"Now":      bd.BuildTime,
 			}
 			outputPath := filepath.Join(tagsDir, tag+".html")
 			f, err := os.OpenFile(outputPath, flags, 0644)

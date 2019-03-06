@@ -5,10 +5,12 @@ import "sort"
 // Articles is a slice of articles
 type Articles []Article
 
+// Len returns the number of articles
 func (a Articles) Len() int {
 	return len(a)
 }
 
+// Swap is used to sort articles
 func (a Articles) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }

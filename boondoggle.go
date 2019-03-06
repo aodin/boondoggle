@@ -61,6 +61,7 @@ func (bd *Boondoggle) ReadDirectory(path string) error {
 
 		article := NewArticle(name)
 		article.Raw = content
+		article.Now = bd.BuildTime
 		bd.Articles = append(bd.Articles, article)
 	}
 	return nil

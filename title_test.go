@@ -19,7 +19,7 @@ func TestExtractTitle(t *testing.T) {
 	}
 
 	// TODO table tests are funky looking with multiline strings
-	// TODO ExtractTitle will add a newline - it shouldn'y
+	// TODO ExtractTitle will add a newline - it shouldn't
 	md1 := `#Title
 More Text 
 `

@@ -23,6 +23,7 @@ type Article struct {
 	LinesOfCode     uint64
 	Tags            []string
 	Metadata        Attrs
+	Now             time.Time
 
 	// TODO need methods to create buffers/scanners and reset raw
 	Filename string
