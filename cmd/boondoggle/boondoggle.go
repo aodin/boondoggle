@@ -13,6 +13,8 @@ var inputDir string
 var outputDir string
 var templateDir string
 
+var numberOfPreviews = 4
+
 func init() {
 	flag.StringVar(&inputDir, "in", ".", "input directory")
 	flag.StringVar(&outputDir, "out", "./dist", "input directory")
@@ -67,8 +69,8 @@ func main() {
 	{
 		// Preview a few articles
 		n := len(bd.Articles)
-		if n > 4 {
-			n = 4
+		if n > numberOfPreviews {
+			n = numberOfPreviews
 		}
 		previews := bd.Articles[:n]
 		attrs := map[string]interface{}{
@@ -82,7 +84,7 @@ func main() {
 			log.Fatalf("Error while opening file for index: %s", err)
 		}
 		defer f.Close()
-		if err := indexTmpl.Execute(f, attrs); err != nil {
+		if err := indexTmpl.ExecuteTemplate(f, "_layout.html", attrs); err != nil {
 			log.Fatalf("Error while writing index: %s", err)
 		}
 	}
@@ -101,7 +103,7 @@ func main() {
 			log.Fatalf("Error while opening file for index: %s", err)
 		}
 		defer f.Close()
-		if err := articlesTmpl.Execute(f, attrs); err != nil {
+		if err := articlesTmpl.ExecuteTemplate(f, "_layout.html", attrs); err != nil {
 			log.Fatalf("Error while writing articles index: %s", err)
 		}
 	}
@@ -147,8 +149,15 @@ func main() {
 	if tagTmpl != nil {
 		log.Printf("Writing %d tags...", len(bd.ByTag))
 		for tag, articles := range bd.ByTag {
+			// Pluralize the label when there is more than one article
+			label := "Article"
+			if len(articles) > 1 {
+				label = "Articles"
+			}
+
 			attrs := map[string]interface{}{
 				"Tag":      tag,
+				"Label":    label,
 				"Articles": articles,
 				"Now":      bd.BuildTime,
 			}
@@ -158,7 +167,7 @@ func main() {
 				log.Fatalf("Error while opening file for tag %s: %s", tag, err)
 			}
 			defer f.Close()
-			if err := tagTmpl.Execute(f, attrs); err != nil {
+			if err := tagTmpl.ExecuteTemplate(f, "_layout.html", attrs); err != nil {
 				log.Fatalf("Error while writing tag %s: %s", tag, err)
 			}
 		}

@@ -43,6 +43,14 @@ var ExampleIndexTemplate = template.Must(template.New("index").Parse(`<!DOCTYPE 
 
 type Templates map[string]*template.Template
 
+func isHTML(name string) bool {
+	return strings.ToLower(filepath.Ext(name)) == HTMLExt
+}
+
+func isAux(name string) bool {
+	return strings.HasPrefix(name, "_")
+}
+
 func ParseTemplates(path string) (Templates, error) {
 	parsed := Templates{}
 
@@ -52,18 +60,23 @@ func ParseTemplates(path string) (Templates, error) {
 		return parsed, err
 	}
 
+	// Any files prefixed with '_' will be added to each template
+	aux := []string{}
 	for _, file := range files {
-		filename := strings.ToLower(file.Name())
-		extension := filepath.Ext(filename)
+		if isHTML(file.Name()) && isAux(file.Name()) {
+			aux = append(aux, filepath.Join(path, file.Name()))
+		}
+	}
 
-		if extension != HTMLExt {
+	for _, file := range files {
+		if !isHTML(file.Name()) || isAux(file.Name()) {
 			continue
 		}
 
-		fullpath := filepath.Join(path, filename)
-		name := strings.TrimSuffix(filename, HTMLExt)
+		fullpath := filepath.Join(path, file.Name())
+		name := strings.TrimSuffix(strings.ToLower(file.Name()), HTMLExt)
 
-		if parsed[name], err = template.ParseFiles(fullpath); err != nil {
+		if parsed[name], err = template.ParseFiles(append(aux, fullpath)...); err != nil {
 			return parsed, err
 		}
 	}
