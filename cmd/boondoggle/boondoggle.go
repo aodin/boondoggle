@@ -117,7 +117,7 @@ func main() {
 			)
 		}
 
-		outputPath := filepath.Join(articleDir, article.Slug+".html")
+		outputPath := filepath.Join(articleDir, article.SaveAs())
 		f, err := os.OpenFile(outputPath, flags, 0644)
 		if err != nil {
 			log.Fatalf(

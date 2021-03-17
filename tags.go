@@ -7,7 +7,7 @@ import (
 )
 
 // ExtractTags will parse and remove the tags from the raw markdown. The
-// Tags will be slugified after parsing.
+// Tags will be converted to slugs after parsing.
 func ExtractTags(article *Article) (err error) {
 	scanner := bufio.NewScanner(bytes.NewBuffer(article.Raw))
 

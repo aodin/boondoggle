@@ -52,6 +52,9 @@ func ParseTemplates(path string) (Templates, error) {
 		return parsed, err
 	}
 
+	// TODO Generic layout template?
+	layout := filepath.Join(path, "_layout.html")
+
 	for _, file := range files {
 		filename := strings.ToLower(file.Name())
 		extension := filepath.Ext(filename)
@@ -63,7 +66,7 @@ func ParseTemplates(path string) (Templates, error) {
 		fullpath := filepath.Join(path, filename)
 		name := strings.TrimSuffix(filename, HTMLExt)
 
-		if parsed[name], err = template.ParseFiles(fullpath); err != nil {
+		if parsed[name], err = template.ParseFiles(layout, fullpath); err != nil {
 			return parsed, err
 		}
 	}

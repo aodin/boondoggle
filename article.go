@@ -30,8 +30,7 @@ type Article struct {
 	Raw      []byte // The entire raw file - TODO use io.Reader?
 }
 
-// String returns the Article Title, falling back to Filename if Title does
-// not exist
+// String returns the Article Title, or the Filename if there is no Title
 func (article Article) String() string {
 	if article.Title == "" {
 		return article.Filename
@@ -39,11 +38,16 @@ func (article Article) String() string {
 	return article.Title
 }
 
+// SaveAs returns the filename for the output HTML file
+func (article Article) SaveAs() string {
+	return article.Slug + ".html"
+}
+
 // RenderWith renders the Article with the given Template
 func (article Article) RenderWith(tmpl *template.Template) ([]byte, error) {
 	var b []byte
 	buffer := bytes.NewBuffer(b)
-	if err := tmpl.Execute(buffer, article); err != nil {
+	if err := tmpl.ExecuteTemplate(buffer, "_layout.html", article); err != nil {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
