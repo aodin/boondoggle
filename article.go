@@ -24,6 +24,7 @@ type Article struct {
 	Tags            []string
 	Metadata        Attrs
 	Now             time.Time
+	Links           Links
 
 	// TODO need methods to create buffers/scanners and reset raw
 	Filename string
@@ -40,7 +41,7 @@ func (article Article) String() string {
 
 // SaveAs returns the filename for the output HTML file
 func (article Article) SaveAs() string {
-	return article.Slug + ".html"
+	return article.Slug + HTMLExt
 }
 
 // RenderWith renders the Article with the given Template
@@ -51,6 +52,11 @@ func (article Article) RenderWith(tmpl *template.Template) ([]byte, error) {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
+}
+
+// URL returns the URL of the article
+func (article Article) URL() string {
+	return article.Links.ForArticle(article)
 }
 
 // ParseMarkdown creates an Article from the given markdown,

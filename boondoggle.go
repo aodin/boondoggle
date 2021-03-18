@@ -14,20 +14,22 @@ import (
 
 const (
 	MarkdownExt = ".md" // MarkdownExt is the common markdown file ending
+	HTMLExt     = ".html"
 )
 
-// Boondoggle builds .HTML files from a directory of markdown files.
+// Boondoggle builds .html files from a directory of markdown files.
 type Boondoggle struct {
+	Links    Links // Writes URLs
 	Articles Articles
 
-	ByTitle map[string]Article // TODO Include full path?
-	ByTag   map[string][]Article
+	ByTitle map[string]Article
+	ByTag   map[string]Articles
 
 	Metadata  Attrs
 	BuildTime time.Time
 }
 
-// TODO Tags returns tags in alphabetical order
+// Tags returns tags in alphabetical order
 func (bd Boondoggle) Tags() (tags []string) {
 	for tag, _ := range bd.ByTag {
 		tags = append(tags, tag)
@@ -60,6 +62,7 @@ func (bd *Boondoggle) ReadDirectory(path string) error {
 		}
 
 		article := NewArticle(name)
+		article.Links = bd.Links
 		article.Raw = content
 		article.Now = bd.BuildTime
 		bd.Articles = append(bd.Articles, article)
@@ -71,8 +74,9 @@ func (bd *Boondoggle) ReadDirectory(path string) error {
 // directly - use ParseDirectory instead
 func New() *Boondoggle {
 	return &Boondoggle{
+		Links:     UseSlugs{},
 		ByTitle:   make(map[string]Article),
-		ByTag:     make(map[string][]Article),
+		ByTag:     make(map[string]Articles),
 		Metadata:  Attrs{},
 		BuildTime: time.Now(),
 	}
@@ -119,8 +123,10 @@ func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 		}
 	}
 
-	// Sort
-	bd.Articles.SortByDate()
-
+	// Sort articles
+	bd.Articles.SortMostRecentArticlesFirst()
+	for tag := range bd.ByTag {
+		bd.ByTag[tag].SortMostRecentArticlesFirst()
+	}
 	return bd, nil
 }

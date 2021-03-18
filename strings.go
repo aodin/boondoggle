@@ -1,6 +1,7 @@
 package boondoggle
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
@@ -8,6 +9,20 @@ import (
 
 var slugifyClean = regexp.MustCompile(`[^\w\s-]`)
 var slugifySpace = regexp.MustCompile(`[-\s]+`)
+
+func HumanizeBytes(size int) string {
+	if size < 1024 {
+		return fmt.Sprintf("%d bytes", size)
+	}
+	var value float64 = float64(size) / 1024.0
+	for _, unit := range []string{"KB", "MB", "GB"} {
+		if value < 1024.0 {
+			return fmt.Sprintf("%.1f %s", value, unit)
+		}
+		value /= 1024.0
+	}
+	return fmt.Sprintf("%.1f %s", value, "TB")
+}
 
 func Slugify(input string) string {
 	// Remove anything that isn't a digit, word character or dash

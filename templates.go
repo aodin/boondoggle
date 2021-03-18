@@ -7,10 +7,6 @@ import (
 	"strings"
 )
 
-const (
-	HTMLExt = ".html"
-)
-
 // Example Templates
 var ExampleArticleTemplate = template.Must(template.New("article").Parse(`<!DOCTYPE html>
 <html>

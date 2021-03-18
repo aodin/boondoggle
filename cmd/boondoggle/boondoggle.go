@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,23 +24,23 @@ func main() {
 	flag.Parse()
 
 	// Parse the input directory
-	log.Printf("Parsing input directory '%s'...", inputDir)
+	fmt.Printf("Parsing articles directory '%s'\n", inputDir)
 
 	// TODO need flags for input directory, output directory
 	bd, err := boondoggle.ParseDirectory(inputDir)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Parsed %d articles", len(bd.Articles))
+	fmt.Printf("Found %d articles\n", len(bd.Articles))
 
 	// If a template directory was provided, parse templates
 	tmpls := boondoggle.Templates{}
 	if templateDir != "" {
-		log.Printf("Parsing template directory '%s'...", templateDir)
+		fmt.Printf("Parsing template directory '%s'\n", templateDir)
 		if tmpls, err = boondoggle.ParseTemplates(templateDir); err != nil {
 			log.Fatalf("Error while parsing templates: %s", err)
 		}
-		log.Printf("Parsed %d templates", len(tmpls))
+		fmt.Printf("Found %d templates\n", len(tmpls))
 	}
 
 	// Does the destination directory exist?
@@ -134,7 +135,11 @@ func main() {
 				article.Slug, err,
 			)
 		}
-		log.Printf("Wrote %d bytes for %s", n, article.Slug)
+		fmt.Printf(
+			"Wrote '%s': %s\n",
+			article.Title,
+			boondoggle.HumanizeBytes(n),
+		)
 	}
 
 	tagsDir := filepath.Join(outputDir, "tags")
@@ -145,13 +150,20 @@ func main() {
 	// Write the tags
 	tagTmpl := tmpls["tag"]
 	if tagTmpl != nil {
-		log.Printf("Writing %d tags...", len(bd.ByTag))
+		fmt.Printf("Writing %d tags\n", len(bd.ByTag))
 		for tag, articles := range bd.ByTag {
 			attrs := map[string]interface{}{
 				"Tag":      tag,
 				"Articles": articles,
 				"Now":      bd.BuildTime,
 			}
+
+			if len(articles) == 1 {
+				attrs["Label"] = "Article"
+			} else {
+				attrs["Label"] = "Articles"
+			}
+
 			outputPath := filepath.Join(tagsDir, tag+".html")
 			f, err := os.OpenFile(outputPath, flags, 0644)
 			if err != nil {

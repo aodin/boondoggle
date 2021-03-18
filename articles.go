@@ -38,7 +38,7 @@ func (a ByDate) Less(i, j int) bool {
 	return x.Date.Unix() > y.Date.Unix()
 }
 
-// SortByDate will sort the articles by Date
-func (a Articles) SortByDate() {
+// SortMostRecentArticlesFirst will sort the articles by Date
+func (a Articles) SortMostRecentArticlesFirst() {
 	sort.Sort(ByDate{a})
 }
