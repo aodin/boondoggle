@@ -2,6 +2,7 @@ package boondoggle
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"time"
 )
@@ -25,6 +26,10 @@ type Article struct {
 	Metadata        Attrs
 	Now             time.Time
 	Links           Links
+
+	// Parsing
+	ParseStart time.Time
+	ParseEnd   time.Time
 
 	// TODO need methods to create buffers/scanners and reset raw
 	Filename string
@@ -59,20 +64,24 @@ func (article Article) URL() string {
 	return article.Links.ForArticle(article)
 }
 
-// ParseMarkdown creates an Article from the given markdown,
-// optionally running it through any given transformers.
-func ParseMarkdown(markdown []byte, pipeline ...Transformer) (Article, error) {
-	article := newArticle()
-	article.Raw = markdown
-
-	// Always call MarkdownToHTML at the end
-	// TODO prevent MarkdownToHTML from being run multiple times?
-	for _, step := range append(pipeline, MarkdownToHTML) {
-		if err := step(&article); err != nil {
-			return article, err
+// Transform modifies the given Article, for instance by converting
+// its markdown to HTML, or performing syntax highlighting
+func (article *Article) Transform(steps ...Transformer) error {
+	article.ParseStart = time.Now()
+	for _, step := range steps {
+		if err := step(article); err != nil {
+			return fmt.Errorf(
+				`Error while transforming article '%s' with %s: %s`,
+				article, step, err,
+			)
 		}
 	}
-	return article, nil
+	article.ParseEnd = time.Now()
+	return nil
+}
+
+func (article Article) ParseDuration() time.Duration {
+	return article.ParseEnd.Sub(article.ParseStart)
 }
 
 // NewArticle creates a new article

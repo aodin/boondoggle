@@ -136,9 +136,10 @@ func main() {
 			)
 		}
 		fmt.Printf(
-			"Wrote '%s': %s\n",
+			"Wrote '%s': %s in %s\n",
 			article.Title,
 			boondoggle.HumanizeBytes(n),
+			article.ParseDuration(),
 		)
 	}
 
