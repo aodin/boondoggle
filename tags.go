@@ -18,7 +18,7 @@ func ExtractTags(article *Article) (err error) {
 		text := scanner.Text()
 		if strings.HasPrefix(text, TagsPrefix) {
 			text = strings.TrimPrefix(text, TagsPrefix)
-			text = strings.TrimRight(text, "-> ")
+			text = strings.TrimRight(text, ClosingComment)
 			article.Tags = normalizeTags(strings.Split(text, ","))
 		} else {
 			if _, err = out.WriteString(text + NewLine); err != nil {
@@ -33,7 +33,6 @@ func ExtractTags(article *Article) (err error) {
 
 func normalizeTags(in []string) (out []string) {
 	for _, tag := range in {
-		// TODO Allow unicode tags?
 		if tag = Slug(tag); tag != "" {
 			out = append(out, tag)
 		}

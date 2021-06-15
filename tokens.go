@@ -6,7 +6,9 @@ const (
 	CodeFence        = "```"
 	NewLine          = "\n"
 	Space            = " "
-	TagsPrefix       = "<!-- tags:" // TODO Rather unfriendly
+	TagsPrefix       = "<!-- tags:"    // TODO Rather unfriendly
+	PreviewPrefix    = "<!-- preview:" // TODO Rather unfriendly
+	ClosingComment   = "-->"
 	TitleAtx         = "#"
 	TitleSetext      = "="
 )

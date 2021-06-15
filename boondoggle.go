@@ -16,6 +16,17 @@ const (
 	HTMLExt     = ".html"
 )
 
+var DefaultProcessor = []Transformer{
+	ParseFilename,
+	ExtractFrontMatter,
+	ExtractTitle,
+	ExtractTags,
+	ExtractPreview,
+	PygmentizeCode,
+	MarkdownToHTML,
+	TruncatedTagPreview(200),
+}
+
 // Boondoggle builds .html files from a directory of markdown files.
 type Boondoggle struct {
 	Links    Links // Writes URLs
@@ -82,26 +93,15 @@ func New() *Boondoggle {
 }
 
 // ParseDirectory will parse all markdown files in the given directory
-// TODO Walk the entire directory structure?
-// TODO noop HTML files?
 func ParseDirectory(path string, steps ...Transformer) (*Boondoggle, error) {
 	bd := New()
 	if err := bd.ReadDirectory(path); err != nil {
 		return nil, err
 	}
 
-	// For each article, perform the default actions, unless alternative
-	// transformers have been given
+	// If no transformers were provided, use the default processor
 	if len(steps) == 0 {
-		steps = []Transformer{
-			ParseFilename,
-			ExtractFrontMatter,
-			ExtractTitle,
-			ExtractTags,
-			PygmentizeCode,
-			MarkdownToHTML,
-			TruncatedTagPreview(200),
-		}
+		steps = DefaultProcessor
 	}
 
 	for index, article := range bd.Articles {

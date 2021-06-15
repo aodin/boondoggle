@@ -59,7 +59,6 @@ func ExtractFrontMatter(article *Article) (err error) {
 		return err
 	}
 
-	// TODO Title must be a string
 	if title := getTitle(article.Metadata); title != "" {
 		article.Title = title
 	}
@@ -71,7 +70,6 @@ func ExtractFrontMatter(article *Article) (err error) {
 	return
 }
 
-// TODO methods of Attrs?
 func getTitle(attrs Attrs) string {
 	title, _ := attrs["title"].(string)
 	return title
@@ -88,5 +86,5 @@ func getTags(attrs Attrs) []string {
 	return normalizeTags(tags)
 }
 
-// ExtractTags must have the Transformer function signature
+// ExtractFrontMatter must have the Transformer function signature
 var _ = Transformer(ExtractFrontMatter)
