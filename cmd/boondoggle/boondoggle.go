@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/aodin/boondoggle"
 )
@@ -13,34 +14,41 @@ import (
 var inputDir string
 var outputDir string
 var templateDir string
+var previewCount int
 
 func init() {
 	flag.StringVar(&inputDir, "in", ".", "input directory")
 	flag.StringVar(&outputDir, "out", "./dist", "input directory")
 	flag.StringVar(&templateDir, "tmpl", "", "template directory")
+	flag.IntVar(&previewCount, "previews", 4, "number of previews")
 }
 
 func main() {
+	start := time.Now() // Record total time to parse
+
 	flag.Parse()
 
 	// Parse the input directory
-	fmt.Printf("Parsing articles directory '%s'\n", inputDir)
+	// TODO logging verbosity
+	// fmt.Printf("Parsing articles directory '%s'\n", inputDir)
 
 	// TODO need flags for input directory, output directory
 	bd, err := boondoggle.ParseDirectory(inputDir)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Found %d articles\n", len(bd.Articles))
+	// TODO logging verbosity
+	// fmt.Printf("Found %d articles\n", len(bd.Articles))
 
 	// If a template directory was provided, parse templates
 	tmpls := boondoggle.Templates{}
 	if templateDir != "" {
-		fmt.Printf("Parsing template directory '%s'\n", templateDir)
+		// TODO logging verbosity
+		// fmt.Printf("Parsing template directory '%s'\n", templateDir)
 		if tmpls, err = boondoggle.ParseTemplates(templateDir); err != nil {
 			log.Fatalf("Error while parsing templates: %s", err)
 		}
-		fmt.Printf("Found %d templates\n", len(tmpls))
+		// fmt.Printf("Found %d templates\n", len(tmpls))
 	}
 
 	// Does the destination directory exist?
@@ -61,6 +69,12 @@ func main() {
 		indexTmpl = tmpl
 	}
 
+	// Get the tags template
+	tagsTmpl := boondoggle.ExampleTagsTemplate
+	if tmpl := tmpls["tags"]; tmpl != nil {
+		tagsTmpl = tmpl
+	}
+
 	// File flags
 	flags := os.O_RDWR + os.O_CREATE + os.O_TRUNC
 
@@ -68,8 +82,8 @@ func main() {
 	{
 		// Preview a few articles
 		n := len(bd.Articles)
-		if n > 4 {
-			n = 4
+		if n > previewCount {
+			n = previewCount
 		}
 		previews := bd.Articles[:n]
 		attrs := map[string]interface{}{
@@ -135,12 +149,16 @@ func main() {
 				article.Slug, err,
 			)
 		}
-		fmt.Printf(
-			"Wrote '%s': %s in %s\n",
-			article.Title,
-			boondoggle.HumanizeBytes(n),
-			article.ParseDuration(),
-		)
+		bytesWritten := boondoggle.HumanizeBytes(n)
+		fmt.Sprintf("%s", bytesWritten)
+
+		// TODO Logging verbosity? Log each article
+		// fmt.Printf(
+		// 	"Wrote '%s': %s in %s\n",
+		// 	article.Title,
+		// 	boondoggle.HumanizeBytes(n),
+		// 	article.ParseDuration(),
+		// )
 	}
 
 	tagsDir := filepath.Join(outputDir, "tags")
@@ -148,10 +166,28 @@ func main() {
 		log.Fatalf("Error while creating tags directory: %s", err)
 	}
 
+	// Render the tags index
+	if tagsTmpl != nil {
+		attrs := map[string]interface{}{
+			"Tags": bd.Tags(),
+			"Now":  bd.BuildTime,
+		}
+		indexPath := filepath.Join(tagsDir, "index.html")
+		f, err := os.OpenFile(indexPath, flags, 0644)
+		if err != nil {
+			log.Fatalf("Error while opening file for tags index: %s", err)
+		}
+		defer f.Close()
+		if err := tagsTmpl.Execute(f, attrs); err != nil {
+			log.Fatalf("Error while writing tags index: %s", err)
+		}
+	}
+
 	// Write the tags
 	tagTmpl := tmpls["tag"]
 	if tagTmpl != nil {
-		fmt.Printf("Writing %d tags\n", len(bd.ByTag))
+		// TODO logging verbosity
+		// fmt.Printf("Writing %d tags\n", len(bd.ByTag))
 		for tag, articles := range bd.ByTag {
 			attrs := map[string]interface{}{
 				"Tag":      tag,
@@ -176,4 +212,10 @@ func main() {
 			}
 		}
 	}
+
+	fmt.Printf(
+		"Wrote %d articles in %d ms\n",
+		len(bd.Articles),
+		time.Since(start).Milliseconds(),
+	)
 }

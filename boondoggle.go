@@ -40,7 +40,7 @@ type Boondoggle struct {
 
 // Tags returns tags in alphabetical order
 func (bd Boondoggle) Tags() (tags []string) {
-	for tag, _ := range bd.ByTag {
+	for tag := range bd.ByTag {
 		tags = append(tags, tag)
 	}
 	sort.Strings(tags)

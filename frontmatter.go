@@ -51,7 +51,7 @@ func ExtractFrontMatter(article *Article) (err error) {
 	}
 
 	if inBlock {
-		return fmt.Errorf("Front Matter block was never closed")
+		return fmt.Errorf("front matter block was never closed")
 	}
 
 	// Parse the entire front matter block

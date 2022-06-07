@@ -37,18 +37,31 @@ var ExampleIndexTemplate = template.Must(template.New("index").Parse(`<!DOCTYPE 
 </html>
 `))
 
+var ExampleTagsTemplate = template.Must(template.New("tags").Parse(`<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tags</title>
+  </head>
+  <body>
+    <ul>
+    {{ range $tag := .Tags }}
+      <li>{{ $tag }}</li>
+	  {{ end }}
+	</ul>
+  </body>
+</html>
+`))
+
 type Templates map[string]*template.Template
 
 func ParseTemplates(path string) (Templates, error) {
 	parsed := Templates{}
 
-	// TODO walk?
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return parsed, err
 	}
 
-	// TODO Generic layout template?
 	layout := filepath.Join(path, "_layout.html")
 
 	for _, file := range files {
