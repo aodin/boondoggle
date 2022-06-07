@@ -7,7 +7,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/russross/blackfriday"
+	"github.com/russross/blackfriday/v2"
 	"golang.org/x/net/html"
 )
 
@@ -47,7 +47,7 @@ func ExtractPreview(article *Article) (err error) {
 
 	// If a hard-coded preview was included, parse the markdown to HTML
 	if preview.Len() > 0 {
-		article.Preview = template.HTML(blackfriday.MarkdownCommon([]byte(preview.String())))
+		article.Preview = template.HTML(blackfriday.Run([]byte(preview.String())))
 		// Update the raw article to remove the parsed preview
 		article.Raw = out.Bytes()
 	}

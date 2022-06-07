@@ -9,7 +9,7 @@ var chromaInput = "```sql\n" +
 	"```\n"
 
 var chromaOutput = `<pre tabindex="0" class="chroma"><code><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">TABLE</span><span class="p">;</span><span class="w">
-</span></span></span></code></pre>\n`
+</span></span></span></code></pre>` + "\n"
 
 func TestChroma(t *testing.T) {
 	var example Article
