@@ -1,7 +1,4 @@
-/*
-Package syntax contains a standard Highlighter interface and multiple
-implementations.
-*/
+// Package syntax contains components to perform syntax highlighting
 package syntax
 
 import "bytes"
@@ -10,7 +7,6 @@ import "bytes"
 type CodeBlock struct {
 	Lang  string
 	Block *bytes.Buffer
-	// TODO count lines of code?
 }
 
 func (code CodeBlock) Exists() bool {

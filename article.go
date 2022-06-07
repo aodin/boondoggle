@@ -31,9 +31,8 @@ type Article struct {
 	ParseStart time.Time
 	ParseEnd   time.Time
 
-	// TODO need methods to create buffers/scanners and reset raw
 	Filename string
-	Raw      []byte // The entire raw file - TODO use io.Reader?
+	Raw      []byte // The entire raw file
 }
 
 // String returns the Article Title, or the Filename if there is no Title

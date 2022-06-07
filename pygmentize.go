@@ -1,3 +1,7 @@
+// Adds a transformer that performs syntax highlighting via an external call to the
+// Python Pygments command: https://pygments.org
+// Remember to install Pygments before using: pip3 install Pygments
+
 package boondoggle
 
 import (

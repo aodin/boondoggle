@@ -22,7 +22,7 @@ var DefaultProcessor = []Transformer{
 	ExtractTitle,
 	ExtractTags,
 	ExtractPreview,
-	PygmentizeCode,
+	ChromaCode,
 	MarkdownToHTML,
 	TruncatedTagPreview(200),
 }

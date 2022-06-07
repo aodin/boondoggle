@@ -3,6 +3,7 @@ module github.com/aodin/boondoggle
 go 1.16
 
 require (
+	github.com/alecthomas/chroma/v2 v2.0.1 // indirect
 	github.com/russross/blackfriday v1.6.0
 	golang.org/x/net v0.0.0-20220607020251-c690dde0001d
 	golang.org/x/text v0.3.7
