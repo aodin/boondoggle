@@ -1,19 +1,14 @@
-Boondoggle
-==========
+```
+   ___                    __               __
+  / _ )___  ___  ___  ___/ /__  ___  ___  / /__
+ / _  / _ \/ _ \/ _ \/ _  / _ \/ _ `/ _ `/ / -_)
+/____/\___/\___/_//_/\_,_/\___/\_, /\_, /_/\__/
+                              /___//___/
+```
 
-A static site generator written in Go.
+A static site generator written in [Go](https://go.dev).
 
-Built to serve the needs of my personal website; probably won't meet yours.
-
-The command `pygmentize` from the syntax highlighter [Pygments](https://pygments.org) is required, and can be installed with:
-
-    pip3 install Pygments
-
+Built solely for my personal website; you should probably use [Hugo](https://gohugo.io) instead.
 
 > Time you enjoy wasting is not wasted time.
 > - Marthe Troly-Curtin
-
-
-Happy hacking!
-
-aodin, 2021
