@@ -9,24 +9,25 @@ import (
 	"time"
 
 	"github.com/aodin/boondoggle"
+	"github.com/fsnotify/fsnotify"
 )
 
 var inputDir string
 var outputDir string
 var templateDir string
 var previewCount int
+var watch bool
 
 func init() {
 	flag.StringVar(&inputDir, "in", ".", "input directory")
 	flag.StringVar(&outputDir, "out", "./dist", "input directory")
 	flag.StringVar(&templateDir, "tmpl", "", "template directory")
 	flag.IntVar(&previewCount, "previews", 4, "number of previews")
+	flag.BoolVar(&watch, "watch", false, "watch the input and template directories")
 }
 
-func main() {
+func parse() {
 	start := time.Now() // Record total time to parse
-
-	flag.Parse()
 
 	// Parse the input directory
 	// TODO logging verbosity
@@ -213,9 +214,63 @@ func main() {
 		}
 	}
 
-	fmt.Printf(
+	log.Printf(
 		"Wrote %d articles in %d ms\n",
 		len(bd.Articles),
 		time.Since(start).Milliseconds(),
 	)
+}
+
+func main() {
+	flag.Parse()
+
+	if watch {
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer watcher.Close()
+
+		parse() // Perform an initial parse
+
+		done := make(chan bool)
+		go func() {
+			for {
+				select {
+				case event, ok := <-watcher.Events:
+					if !ok {
+						return
+					}
+					// TODO What events to listen for? CREATE, WRITE
+					log.Println("event:", event)
+					parse() // Perform a parse whenever a file changes
+
+				case err, ok := <-watcher.Errors:
+					if !ok {
+						return
+					}
+					log.Println("error:", err)
+				}
+			}
+		}()
+
+		// Watch the input and template directories
+		err = watcher.Add(inputDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = watcher.Add(templateDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Watching %s and %s for changes\n", inputDir, templateDir)
+
+		<-done
+
+	} else {
+		// Run once and exit
+		parse()
+	}
 }
