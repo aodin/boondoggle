@@ -1,6 +1,5 @@
-/*
-Boondoggle is a static site generator written in Go.
-*/
+// Boondoggle is a static site generator written in Go.
+
 package boondoggle
 
 import (

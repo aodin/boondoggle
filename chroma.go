@@ -34,6 +34,7 @@ func ChromaCode(article *Article) error {
 				if err := chromaCodeToHTML(out, code); err != nil {
 					return fmt.Errorf("ChromaCode error: %s", err)
 				}
+				out.WriteString("\n")     // Add a newline
 				code = syntax.CodeBlock{} // Clear the existing code block
 				continue
 			} else {
