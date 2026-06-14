@@ -2,7 +2,7 @@ package syntax
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os/exec"
 )
 
@@ -51,7 +51,7 @@ func (h Pygmentize) Highlight(text []byte, lang string) ([]byte, error) {
 	}
 
 	// Read the generated HTML from stdout
-	b, err := ioutil.ReadAll(output)
+	b, err := io.ReadAll(output)
 	if err != nil {
 		return nil, fmt.Errorf("ReadAll error: %s", err)
 	}

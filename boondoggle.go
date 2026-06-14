@@ -3,7 +3,7 @@
 package boondoggle
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -49,7 +49,7 @@ func (bd Boondoggle) Tags() (tags []string) {
 
 func (bd *Boondoggle) ReadDirectory(path string) error {
 	// Parse each file in the directory
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
@@ -62,10 +62,7 @@ func (bd *Boondoggle) ReadDirectory(path string) error {
 			continue
 		}
 
-		fullpath := filepath.Join(path, name)
-
-		// TODO or use io.Reader?
-		content, err := ioutil.ReadFile(fullpath)
+		content, err := os.ReadFile(filepath.Join(path, name))
 		if err != nil {
 			return err
 		}

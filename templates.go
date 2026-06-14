@@ -2,7 +2,7 @@ package boondoggle
 
 import (
 	"html/template"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -56,7 +56,7 @@ type Templates map[string]*template.Template
 func ParseTemplates(path string) (Templates, error) {
 	parsed := Templates{}
 
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return parsed, err
 	}

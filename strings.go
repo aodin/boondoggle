@@ -59,7 +59,7 @@ var filenameSplitter = regexp.MustCompile(`(?P<date>\d+-\d+-\d+)[ -_](?P<title>.
 func SplitFilename(input string) (string, string) {
 	// TODO Or could use the split functionality of regexp
 	results := filenameSplitter.FindStringSubmatch(input)
-	if results == nil || len(results) < 3 {
+	if len(results) < 3 {
 		return "", ""
 	}
 	return results[1], results[2]
