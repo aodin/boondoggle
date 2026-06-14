@@ -48,11 +48,18 @@ func (article Article) SaveAs() string {
 	return article.Slug + HTMLExt
 }
 
-// RenderWith renders the Article with the given Template
+// RenderWith renders the Article with the given Template. Templates parsed from
+// a directory are rendered through their "_layout.html" base; when no such
+// template is defined (for example the bundled ExampleArticleTemplate), the
+// template itself is executed directly.
 func (article Article) RenderWith(tmpl *template.Template) ([]byte, error) {
 	var b []byte
 	buffer := bytes.NewBuffer(b)
-	if err := tmpl.ExecuteTemplate(buffer, "_layout.html", article); err != nil {
+	if tmpl.Lookup("_layout.html") != nil {
+		if err := tmpl.ExecuteTemplate(buffer, "_layout.html", article); err != nil {
+			return nil, err
+		}
+	} else if err := tmpl.Execute(buffer, article); err != nil {
 		return nil, err
 	}
 	return buffer.Bytes(), nil

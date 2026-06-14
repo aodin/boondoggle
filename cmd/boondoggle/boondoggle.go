@@ -18,12 +18,27 @@ var templateDir string
 var previewCount int
 var watch bool
 
+// Feed metadata
+var siteTitle string
+var siteURL string
+var siteDescription string
+var siteAuthor string
+var siteEmail string
+var feedItems int
+
 func init() {
 	flag.StringVar(&inputDir, "in", ".", "input directory")
 	flag.StringVar(&outputDir, "out", "./dist", "input directory")
 	flag.StringVar(&templateDir, "tmpl", "", "template directory")
 	flag.IntVar(&previewCount, "previews", 4, "number of previews")
 	flag.BoolVar(&watch, "watch", false, "watch the input and template directories")
+
+	flag.StringVar(&siteTitle, "title", "", "site title for the RSS and Atom feeds")
+	flag.StringVar(&siteURL, "url", "", "absolute base URL of the site, e.g. https://example.com (enables feeds)")
+	flag.StringVar(&siteDescription, "desc", "", "site description for the RSS and Atom feeds")
+	flag.StringVar(&siteAuthor, "author", "", "default feed author name")
+	flag.StringVar(&siteEmail, "email", "", "default feed author email")
+	flag.IntVar(&feedItems, "feeditems", 0, "maximum number of articles in the feeds, set 0 for all")
 }
 
 func parse() {
@@ -210,6 +225,40 @@ func parse() {
 			defer f.Close()
 			if err := tagTmpl.Execute(f, attrs); err != nil {
 				log.Fatalf("Error while writing tag %s: %s", tag, err)
+			}
+		}
+	}
+
+	// Write the RSS and Atom feeds. Feeds require absolute URLs, so they are
+	// only generated when a base site URL is provided.
+	if siteURL != "" {
+		feed := boondoggle.Feed{
+			Title:       siteTitle,
+			Link:        siteURL,
+			Description: siteDescription,
+			Author:      siteAuthor,
+			Email:       siteEmail,
+			Limit:       feedItems,
+		}
+
+		feeds := map[string]boondoggle.FeedTransformer{
+			"rss.xml":  feed.RSS,
+			"atom.xml": feed.Atom,
+		}
+		for name, render := range feeds {
+			out, err := render(bd)
+			if err != nil {
+				log.Fatalf("Error while rendering %s: %s", name, err)
+			}
+
+			outputPath := filepath.Join(outputDir, name)
+			f, err := os.OpenFile(outputPath, flags, 0644)
+			if err != nil {
+				log.Fatalf("Error while opening file for %s: %s", name, err)
+			}
+			defer f.Close()
+			if _, err := f.Write(out); err != nil {
+				log.Fatalf("Error while writing %s: %s", name, err)
 			}
 		}
 	}

@@ -79,7 +79,11 @@ Previewing:
 		tokenType := tokenizer.Next()
 		switch tokenType {
 		case html.ErrorToken:
-			return tokenizer.Err()
+			// io.EOF is the normal end of the token stream, not a failure.
+			if err := tokenizer.Err(); err != io.EOF {
+				return err
+			}
+			break Previewing
 		case html.TextToken:
 			if depth > 0 {
 				n, err := preview.Write(tokenizer.Raw())

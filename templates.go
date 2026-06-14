@@ -15,7 +15,7 @@ var ExampleArticleTemplate = template.Must(template.New("article").Parse(`<!DOCT
   </head>
   <body>
     <h1>{{ .Title }}</h1>
-    <h4>{{ .Date.Format "Monday, January 2, 2006" }}<h4>
+    {{ if not .Date.IsZero }}<h4>{{ .Date.Format "Monday, January 2, 2006" }}</h4>{{ end }}
     {{ .HTML }}
   </body>
 </html>
@@ -33,7 +33,6 @@ var ExampleIndexTemplate = template.Must(template.New("index").Parse(`<!DOCTYPE 
     </article>
     {{ end }}
   </body>
-    }
 </html>
 `))
 
