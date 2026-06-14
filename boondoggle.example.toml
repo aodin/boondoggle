@@ -1,0 +1,15 @@
+# Example boondoggle configuration. Copy to boondoggle.toml and edit.
+# Command-line flags override any value set here.
+
+input = "."          # Directory of markdown articles
+output = "./dist"    # Directory to write the generated site
+templates = ""       # Directory of HTML templates (optional)
+previews = 4         # Number of article previews on the index
+
+# Feed configuration: a url is required for the RSS (feed.xml) and Atom (atom.xml)
+[feed]
+title = "Example Blog"
+url = "https://example.com"
+description = "An example blog"
+author = "Example User"
+email = "user@example.com"

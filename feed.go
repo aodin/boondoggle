@@ -14,12 +14,12 @@ type FeedTransformer func(*Boondoggle) ([]byte, error)
 // Feed holds site-level metadata required to render a syndication feed.
 // Per-article values (title, link, date, content) are taken from the articles.
 type Feed struct {
-	Title       string
-	Link        string // Absolute base URL of the site, e.g. https://example.com
-	Description string
-	Author      string
-	Email       string
-	Limit       int // Set 0 to include all articles
+	Title       string `toml:"title"`
+	Link        string `toml:"url"` // Absolute base URL of the site, e.g. https://example.com
+	Description string `toml:"description"`
+	Author      string `toml:"author"`
+	Email       string `toml:"email"`
+	Limit       int    `toml:"items"` // Set 0 to include all articles
 }
 
 // RSS renders the Boondoggle's articles as an RSS 2.0 feed.

@@ -6,12 +6,14 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/aodin/boondoggle"
 	"github.com/fsnotify/fsnotify"
 )
 
+var configPath string
 var inputDir string
 var outputDir string
 var templateDir string
@@ -27,10 +29,13 @@ var siteEmail string
 var feedItems int
 
 func init() {
-	flag.StringVar(&inputDir, "in", ".", "input directory")
-	flag.StringVar(&outputDir, "out", "./dist", "input directory")
-	flag.StringVar(&templateDir, "tmpl", "", "template directory")
-	flag.IntVar(&previewCount, "previews", 4, "number of previews")
+	defaults := boondoggle.DefaultConfig()
+
+	flag.StringVar(&configPath, "config", "boondoggle.toml", "path to the configuration file")
+	flag.StringVar(&inputDir, "in", defaults.Input, "input directory")
+	flag.StringVar(&outputDir, "out", defaults.Output, "output directory")
+	flag.StringVar(&templateDir, "tmpl", defaults.Templates, "template directory")
+	flag.IntVar(&previewCount, "previews", defaults.Previews, "number of previews")
 	flag.BoolVar(&watch, "watch", false, "watch the input and template directories")
 
 	flag.StringVar(&siteTitle, "title", "", "site title for the RSS and Atom feeds")
@@ -39,6 +44,75 @@ func init() {
 	flag.StringVar(&siteAuthor, "author", "", "default feed author name")
 	flag.StringVar(&siteEmail, "email", "", "default feed author email")
 	flag.IntVar(&feedItems, "feeditems", 0, "maximum number of articles in the feeds, set 0 for all")
+}
+
+// loadSettings merges the configuration file with the command-line flags.
+// Explicit flags take precedence over the config file, which in turn takes
+// precedence over the built-in defaults.
+func loadSettings() {
+	// Track which flags were explicitly set on the command line.
+	set := map[string]bool{}
+	flag.Visit(func(f *flag.Flag) { set[f.Name] = true })
+
+	config := boondoggle.DefaultConfig()
+	if _, err := os.Stat(configPath); err == nil {
+		if config, err = boondoggle.LoadConfig(configPath); err != nil {
+			log.Fatalf("Error while loading config %s: %s", configPath, err)
+		}
+	} else if set["config"] {
+		// An explicitly requested config file that is missing is an error.
+		log.Fatalf("Config file %s does not exist", configPath)
+	}
+
+	if !set["in"] {
+		inputDir = config.Input
+	}
+	if !set["out"] {
+		outputDir = config.Output
+	}
+	if !set["tmpl"] {
+		templateDir = config.Templates
+	}
+	if !set["previews"] {
+		previewCount = config.Previews
+	}
+	if !set["title"] {
+		siteTitle = config.Feed.Title
+	}
+	if !set["url"] {
+		siteURL = config.Feed.Link
+	}
+	if !set["desc"] {
+		siteDescription = config.Feed.Description
+	}
+	if !set["author"] {
+		siteAuthor = config.Feed.Author
+	}
+	if !set["email"] {
+		siteEmail = config.Feed.Email
+	}
+	if !set["feeditems"] {
+		feedItems = config.Feed.Limit
+	}
+}
+
+// underOutput reports whether path is the output directory or a file within it.
+// It is used to ignore the generator's own writes while watching.
+func underOutput(path string) bool {
+	out, err := filepath.Abs(outputDir)
+	if err != nil {
+		return false
+	}
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
+	rel, err := filepath.Rel(out, abs)
+	if err != nil {
+		return false
+	}
+	// rel does not escape the output directory (no leading "..").
+	return rel == "." || !strings.HasPrefix(rel, ".."+string(os.PathSeparator)) && rel != ".."
 }
 
 func parse() {
@@ -242,7 +316,7 @@ func parse() {
 		}
 
 		feeds := map[string]boondoggle.FeedTransformer{
-			"rss.xml":  feed.RSS,
+			"feed.xml": feed.RSS,
 			"atom.xml": feed.Atom,
 		}
 		for name, render := range feeds {
@@ -272,6 +346,7 @@ func parse() {
 
 func main() {
 	flag.Parse()
+	loadSettings()
 
 	if watch {
 		watcher, err := fsnotify.NewWatcher()
@@ -290,9 +365,17 @@ func main() {
 					if !ok {
 						return
 					}
+					// Ignore the files we generate; otherwise writing the
+					// output would trigger an endless rebuild loop.
+					if underOutput(event.Name) {
+						continue
+					}
 					// TODO What events to listen for? CREATE, WRITE
 					log.Println("event:", event)
-					parse() // Perform a parse whenever a file changes
+					// Reload settings so config file edits take effect, then
+					// rebuild.
+					loadSettings()
+					parse()
 
 				case err, ok := <-watcher.Errors:
 					if !ok {
@@ -303,18 +386,22 @@ func main() {
 			}
 		}()
 
-		// Watch the input and template directories
-		err = watcher.Add(inputDir)
-		if err != nil {
-			log.Fatal(err)
+		// Watch the input directory, and the template and config files when
+		// they are present.
+		watched := []string{inputDir}
+		if templateDir != "" {
+			watched = append(watched, templateDir)
+		}
+		if _, err := os.Stat(configPath); err == nil {
+			watched = append(watched, configPath)
+		}
+		for _, path := range watched {
+			if err := watcher.Add(path); err != nil {
+				log.Fatal(err)
+			}
 		}
 
-		err = watcher.Add(templateDir)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		log.Printf("Watching %s and %s for changes\n", inputDir, templateDir)
+		log.Printf("Watching %s for changes\n", strings.Join(watched, ", "))
 
 		<-done
 
